@@ -1,16 +1,25 @@
-import React, { useState } from "react";
-import { Modal, Box, Button, TextField, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
-import CustomScheduleForm from "../CustomScheduleForm";
-import InactiveScheduleForm from "../InactiveScheduleForm";
-import VacacionesForm from "../VacacionesForm";
-import { handleSaveCustomSchedule, handleSaveInactiveSchedule, handleSaveVacaciones } from "../firebase/firebaseFunctions";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
+import React, { useState, useEffect } from "react";
+import { Modal, Box, TextField, Button, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "./firebase/firebaseConfig";
 
-const ConfigModal = ({ open, onClose, configurations, setConfigurations }) => {
+const ConfigModal = ({ open, onClose }) => {
+  const [configurations, setConfigurations] = useState({});
   const [selectedColor, setSelectedColor] = useState({ key: "", value: "" });
   const [selectedExtraColor, setSelectedExtraColor] = useState({ key: "", value: "" });
   const [selectedExtraEmployee, setSelectedExtraEmployee] = useState("");
+
+  useEffect(() => {
+    const fetchConfigurations = async () => {
+      const docRef = doc(db, "configuraciones", "initialConfig");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setConfigurations(docSnap.data());
+      }
+    };
+
+    fetchConfigurations();
+  }, []);
 
   const handleUpdateConfig = async () => {
     const updatedConfigurations = { ...configurations };
@@ -45,9 +54,9 @@ const ConfigModal = ({ open, onClose, configurations, setConfigurations }) => {
           <InputLabel>Colors</InputLabel>
           <Select
             value={selectedColor.key}
-            onChange={(e) => setSelectedColor({ key: e.target.value, value: configurations?.colors?.[e.target.value] || "" })}
+            onChange={(e) => setSelectedColor({ key: e.target.value, value: configurations.colors[e.target.value] })}
           >
-            {Object.keys(configurations?.colors || {}).map((key) => (
+            {Object.keys(configurations.colors || {}).map((key) => (
               <MenuItem key={key} value={key}>
                 {key}
               </MenuItem>
@@ -79,11 +88,11 @@ const ConfigModal = ({ open, onClose, configurations, setConfigurations }) => {
             value={selectedExtraColor.key}
             onChange={(e) => {
               const key = e.target.value;
-              setSelectedExtraColor({ key, value: configurations?.extraColors?.[key] || "" });
+              setSelectedExtraColor({ key, value: configurations.extraColors[key] });
               setSelectedExtraEmployee(key);
             }}
           >
-            {Object.keys(configurations?.extraColors || {}).map((key) => (
+            {Object.keys(configurations.extraColors || {}).map((key) => (
               <MenuItem key={key} value={key}>
                 {key}
               </MenuItem>
@@ -117,65 +126,4 @@ const ConfigModal = ({ open, onClose, configurations, setConfigurations }) => {
   );
 };
 
-const Modales = ({
-  modalOpen,
-  setModalOpen,
-  inactiveModalOpen,
-  setInactiveModalOpen,
-  vacacionesModalOpen,
-  setVacacionesModalOpen,
-  setCustomSchedules,
-  customSchedules,
-  setInactiveSchedules,
-  inactiveSchedules,
-  setVacaciones,
-  vacaciones,
-  configModalOpen,
-  setConfigModalOpen,
-  configurations,
-  setConfigurations
-}) => {
-  return (
-    <div>
-      <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
-        Add Custom Schedule
-      </Button>
-      <Button variant="contained" color="secondary" onClick={() => setInactiveModalOpen(true)}>
-        Add Inactive Schedule
-      </Button>
-      <Button variant="contained" color="secondary" onClick={() => setVacacionesModalOpen(true)}>
-        Add Vacaciones
-      </Button>
-      <Button variant="contained" color="primary" onClick={() => setConfigModalOpen(true)}>
-        Configuración
-      </Button>
-
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
-          <CustomScheduleForm onSave={(customSchedule) => handleSaveCustomSchedule(customSchedule, setCustomSchedules, customSchedules, setModalOpen)} />
-        </Box>
-      </Modal>
-
-      <Modal open={inactiveModalOpen} onClose={() => setInactiveModalOpen(false)}>
-        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
-          <InactiveScheduleForm onSave={(inactiveSchedule) => handleSaveInactiveSchedule(inactiveSchedule, setInactiveSchedules, inactiveSchedules, setInactiveModalOpen)} />
-        </Box>
-      </Modal>
-
-      <Modal open={vacacionesModalOpen} onClose={() => setVacacionesModalOpen(false)}>
-        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
-          <VacacionesForm onSave={(vacacion) => handleSaveVacaciones(vacacion, setVacaciones, vacaciones, setVacacionesModalOpen)} />
-        </Box>
-      </Modal>
-
-      <ConfigModal
-        open={configModalOpen}
-        onClose={() => setConfigModalOpen(false)}
-        configurations={configurations}
-        setConfigurations={setConfigurations}
-      />
-    </div>
-  );
-};
-
-export default Modales;
+export default ConfigModal;
