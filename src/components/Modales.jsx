@@ -117,6 +117,69 @@ const ConfigModal = ({ open, onClose, configurations, setConfigurations }) => {
   );
 };
 
+const RotationModal = ({ open, onClose, onSave }) => {
+  const [startDate, setStartDate] = useState("");
+  const [rotation, setRotation] = useState(["BF", "JG", "LL"]);
+
+  const handleSave = () => {
+    onSave({ startDate, rotation });
+    onClose();
+  };
+
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Box sx={{ ...modalStyle, width: 400 }}>
+        <h2>Definir Rotación General</h2>
+        <TextField
+          label="Fecha de Inicio"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          fullWidth
+          margin="normal"
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+        {rotation.map((shift, index) => (
+          <TextField
+            key={index}
+            select
+            label={`Turno ${index + 1}`}
+            value={shift}
+            onChange={(e) => {
+              const newRotation = [...rotation];
+              newRotation[index] = e.target.value;
+              setRotation(newRotation);
+            }}
+            fullWidth
+            margin="normal"
+          >
+            {["BF", "JG", "LL"].map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        ))}
+        <Button onClick={handleSave} variant="contained" color="primary">
+          Guardar
+        </Button>
+      </Box>
+    </Modal>
+  );
+};
+
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
+};
+
 const Modales = ({
   modalOpen,
   setModalOpen,
@@ -133,7 +196,10 @@ const Modales = ({
   configModalOpen,
   setConfigModalOpen,
   configurations,
-  setConfigurations
+  setConfigurations,
+  rotationModalOpen,
+  setRotationModalOpen,
+  handleSaveRotation,
 }) => {
   return (
     <div>
@@ -148,6 +214,9 @@ const Modales = ({
       </Button>
       <Button variant="contained" color="primary" onClick={() => setConfigModalOpen(true)}>
         Configuración
+      </Button>
+      <Button variant="contained" color="primary" onClick={() => setRotationModalOpen(true)}>
+        Definir Rotación General
       </Button>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
@@ -173,6 +242,12 @@ const Modales = ({
         onClose={() => setConfigModalOpen(false)}
         configurations={configurations}
         setConfigurations={setConfigurations}
+      />
+
+      <RotationModal
+        open={rotationModalOpen}
+        onClose={() => setRotationModalOpen(false)}
+        onSave={handleSaveRotation}
       />
     </div>
   );

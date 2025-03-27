@@ -1,7 +1,7 @@
-const employees = ["BF", "JG", "LL"];
-const shifts = ["6-14", "14-22", "22-6"];
-const shiftHours = { "6-14": [6, 14], "14-22": [14, 22], "22-6": [22, 6] };
-const extraEmployees = ["Gabi", "Facu", "Extras", "Leo"];
+import { fechaInicioRotacion, fechaInicioRotacionAlt, turnoEmployee } from "../config";
+
+const shifts = ["22-6", "14-22", "6-14"];
+const shiftHours = { "22-6": [22, 6], "14-22": [14, 22], "6-14": [6, 14] };
 
 const getMonday = (date) => {
   const day = date.getDay();
@@ -10,19 +10,41 @@ const getMonday = (date) => {
   return new Date(date.setHours(0, 0, 0, 0)); // asegurarse de que la hora sea 00:00:00
 };
 
-const generateSchedule = (startDate, numWeeks) => {
+const generateSchedule = (startDate, numWeeks, rotationConfig = [], extraEmployees = []) => {
   let schedule = [];
   let date = getMonday(new Date(startDate));
-  const shiftRotation = [
-    ["22-6", "6-14", "14-22"],  // Semana 1
-    ["14-22", "22-6", "6-14"],  // Semana 2
-    ["6-14", "14-22", "22-6"],  // Semana 3
-  ];
-
+  let currentRotation = ["22-6", "14-22", "6-14"];
+  let rotationIndex = 0;
   let currentExtraIndex = 0;
+  let employees = turnoEmployee;
+
+  console.log("employees:", employees); // Log para verificar
+
+  if (!Array.isArray(employees) || employees.length === 0) {
+    console.error("Employees array is not defined or empty.");
+    return schedule;
+  }
 
   for (let week = 0; week < numWeeks; week++) {
-    const currentShifts = shiftRotation[week % 3];
+    // Verificar si hay una nueva rotación a partir de esta semana
+    const newRotation = rotationConfig.find(
+      (config) => new Date(config.startDate) <= date
+    );
+    if (newRotation) {
+      currentRotation = newRotation.rotation;
+    }
+
+    // Verificar si hay una fecha de inicio de rotación alternativa
+    const altRotationStart = fechaInicioRotacionAlt.find(
+      (altDate) => new Date(altDate) <= date
+    );
+    if (altRotationStart) {
+      rotationIndex = Math.floor((date - new Date(altRotationStart)) / (7 * 24 * 60 * 60 * 1000));
+    } else {
+      rotationIndex = Math.floor((date - new Date(fechaInicioRotacion)) / (7 * 24 * 60 * 60 * 1000));
+    }
+
+    const currentShifts = currentRotation.slice(rotationIndex % currentRotation.length).concat(currentRotation.slice(0, rotationIndex % currentRotation.length));
     let weekData = { date: date.toISOString().split("T")[0], days: [], summary: {} };
     employees.forEach((employee, i) => {
       weekData.summary[currentShifts[i]] = employee;
@@ -36,6 +58,11 @@ const generateSchedule = (startDate, numWeeks) => {
 
       employees.forEach((employee, i) => {
         const turno = currentShifts[i]; // por ejemplo "22-6"
+        if (!shiftHours[turno]) {
+          // Si el turno no está en shiftHours, asumimos que es un turno personalizado
+          console.warn(`Turno ${turno} no es un turno estándar, se asume que es un turno personalizado.`);
+          return;
+        }
         let [start, end] = shiftHours[turno]; // ej: [22,6]
 
         if (dayOfWeek === 5 && turno === "22-6") {
@@ -103,6 +130,7 @@ const generateSchedule = (startDate, numWeeks) => {
     }
 
     schedule.push(weekData);
+    rotationIndex++;
   }
   return schedule;
 };

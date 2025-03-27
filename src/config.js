@@ -6,6 +6,9 @@ export let extraColors = {};
 export let daysOfWeek = [];
 export let extraEmployees = [];
 export let dayInitials = [];
+export let fechaInicioRotacion = "";
+export let fechaInicioRotacionAlt = [];
+export let turnoEmployee = [];
 
 export const loadConfigurations = async () => {
   try {
@@ -19,8 +22,11 @@ export const loadConfigurations = async () => {
       daysOfWeek = configData.daysOfWeek;
       extraEmployees = configData.extraEmployees;
       dayInitials = configData.dayInitials;
+      fechaInicioRotacion = configData.fechaInicioRotacion;
+      fechaInicioRotacionAlt = configData.fechaInicioRotacionAlt || [];
+      turnoEmployee = configData.turnoEmployee || [];
+      return configData;
     } else {
-      console.log("No such document!");
     }
   } catch (error) {
     console.error("Error loading configurations: ", error);
