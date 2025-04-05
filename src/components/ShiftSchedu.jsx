@@ -4,7 +4,7 @@ import Modales from "../components/Modales";
 import { fetchCustomSchedules, fetchInactiveSchedules, fetchVacaciones } from "../firebase/firebaseFunctions";
 import { fetchHolidays } from "../fetchHolidays";
 import generateSchedule from "../components/GenerateSchedule";
-import { colors, extraColors, daysOfWeek, extraEmployees, dayInitials, loadConfigurations, fechaInicioRotacion, fechaInicioRotacionAlt, turnoEmployee } from "./config";
+import { colors, extraColors, daysOfWeek, extraEmployees, dayInitials, loadConfigurations, fechaInicioRotacion, fechaInicioRotacionAlt, turnoEmployee } from "../config";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import ScheduleTable from "../components/ScheduleTable";
