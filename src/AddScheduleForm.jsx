@@ -47,6 +47,7 @@ const AddScheduleForm = ({ onSave }) => {
             onChange={(e) => handleDateChange(index, e.target.value)}
             fullWidth
             margin="normal"
+            InputLabelProps={{ shrink: true }}
           />
         ))}
         <Button onClick={handleAddDate} variant="contained" color="primary">
@@ -59,6 +60,7 @@ const AddScheduleForm = ({ onSave }) => {
           onChange={(e) => setRangeStartDate(e.target.value)}
           fullWidth
           margin="normal"
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           label="Range End Date"
@@ -67,6 +69,8 @@ const AddScheduleForm = ({ onSave }) => {
           onChange={(e) => setRangeEndDate(e.target.value)}
           fullWidth
           margin="normal"
+          InputLabelProps={{ shrink: true }}
+
         />
         <TextField
           label="Start Hour"
