@@ -1,62 +1,34 @@
-import React, { useState } from 'react';
-import { PageLayout } from './components/PageLayout';
+import React from 'react';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
-import Button from 'react-bootstrap/Button';
-import { loginRequest } from './authConfig';
-import { callMsGraph } from './graph';
-import { ProfileData } from './components/ProfileData';
+import { Typography, Box } from '@mui/material';
+import ShiftScheduler from './components/ShiftScheduler';
 
-// 👉 Importa tu componente renombrado
-import ShiftScheduler from './components/ShiftScheduler'; // ajusta el path según tu estructura
-
-const ProfileContent = () => {
-    const { instance, accounts } = useMsal();
-    const [graphData, setGraphData] = useState(null);
-
-    function RequestProfileData() {
-        instance
-            .acquireTokenSilent({
-                ...loginRequest,
-                account: accounts[0],
-            })
-            .then((response) => {
-                callMsGraph(response.accessToken).then((response) => setGraphData(response));
-            });
-    }
-
+const UserNameDisplay = () => {
+    const { accounts } = useMsal();
     return (
-        <>
-            <h5>Bienvenido, {accounts[0].name}</h5>
-            {graphData ? (
-                <ProfileData graphData={graphData} />
-            ) : (
-                <Button onClick={RequestProfileData}>
-                    Obtener perfil de Microsoft
-                </Button>
-            )}
-        </>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+            Bienvenido, {accounts[0]?.name}
+        </Typography>
     );
 };
 
 const MainContent = () => {
     return (
-        <div>
+        <Box sx={{ p: 3 }}>
             <AuthenticatedTemplate>
-            <ShiftScheduler />
+                <UserNameDisplay />
+                <ShiftScheduler />
             </AuthenticatedTemplate>
 
             <UnauthenticatedTemplate>
-
-                <h5 className="card-title">Inicia sesión para ver el sistema de turnos.</h5>
+                <Typography variant="h6" align="center" mt={4}>
+                    Inicia sesión para ver el sistema de turnos.
+                </Typography>
             </UnauthenticatedTemplate>
-        </div>
+        </Box>
     );
 };
 
 export default function App() {
-    return (
-        <PageLayout>
-            <MainContent />
-        </PageLayout>
-    );
+    return <MainContent />;
 }
