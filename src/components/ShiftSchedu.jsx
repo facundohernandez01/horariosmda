@@ -10,17 +10,23 @@ import { db } from "../firebase/firebaseConfig";
 import ScheduleTable from "../components/ScheduleTable";
 
 
-const ShiftScheduler = () => {
+const ShiftScheduler = ({
+  modalOpen,
+  setModalOpen,
+  inactiveModalOpen,
+  setInactiveModalOpen,
+  vacacionesModalOpen,
+  setVacacionesModalOpen,
+  configModalOpen,
+  setConfigModalOpen,
+  rotationModalOpen,
+  setRotationModalOpen,
+}) =>  {
   const [holidays, setHolidays] = useState([]);
   const [expandedWeek, setExpandedWeek] = useState(null);
   const [customSchedules, setCustomSchedules] = useState([]);
   const [inactiveSchedules, setInactiveSchedules] = useState([]);
   const [vacaciones, setVacaciones] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [inactiveModalOpen, setInactiveModalOpen] = useState(false);
-  const [vacacionesModalOpen, setVacacionesModalOpen] = useState(false);
-  const [configModalOpen, setConfigModalOpen] = useState(false);
-  const [rotationModalOpen, setRotationModalOpen] = useState(false);
   const [expandAll, setExpandAll] = useState(false); // Estado para manejar el interruptor
   const [configurations, setConfigurations] = useState({});
   const [rotationConfig, setRotationConfig] = useState([]);
@@ -97,9 +103,7 @@ const ShiftScheduler = () => {
         }
         label="Expandir todas las semanas"
       />
-      <Button variant="contained" onClick={() => setRotationModalOpen(true)}>
-        Definir Rotación General
-      </Button>
+
       <Modales
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
