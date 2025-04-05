@@ -1,7 +1,7 @@
 import React from 'react';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import { Typography, Box } from '@mui/material';
-import ShiftScheduler from './components/ShiftScheduler';
+import ShiftScheduler from './components/ShiftSchedu';
 import { SignInButton } from './components/SignInButton';
 
 const UserNameDisplay = () => {
