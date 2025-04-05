@@ -1,0 +1,63 @@
+import React, { useState } from 'react';
+import './styles/App.css';
+import { PageLayout } from './components/PageLayout';
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
+import Button from 'react-bootstrap/Button';
+import { loginRequest } from './authConfig';
+import { callMsGraph } from './graph';
+import { ProfileData } from './components/ProfileData';
+
+// 👉 Importa tu componente renombrado
+import ShiftScheduler from './components/ShiftScheduler'; // ajusta el path según tu estructura
+
+const ProfileContent = () => {
+    const { instance, accounts } = useMsal();
+    const [graphData, setGraphData] = useState(null);
+
+    function RequestProfileData() {
+        instance
+            .acquireTokenSilent({
+                ...loginRequest,
+                account: accounts[0],
+            })
+            .then((response) => {
+                callMsGraph(response.accessToken).then((response) => setGraphData(response));
+            });
+    }
+
+    return (
+        <>
+            <h5 className="card-title">Bienvenido, {accounts[0].name}</h5>
+            {graphData ? (
+                <ProfileData graphData={graphData} />
+            ) : (
+                <Button variant="secondary" onClick={RequestProfileData}>
+                    Obtener perfil de Microsoft
+                </Button>
+            )}
+        </>
+    );
+};
+
+const MainContent = () => {
+    return (
+        <div className="App">
+            <AuthenticatedTemplate>
+                {/* 👇 Aquí renderizas directamente tu app */}
+                <ShiftScheduler />
+            </AuthenticatedTemplate>
+
+            <UnauthenticatedTemplate>
+                <h5 className="card-title">Inicia sesión para ver el sistema de turnos.</h5>
+            </UnauthenticatedTemplate>
+        </div>
+    );
+};
+
+export default function App() {
+    return (
+        <PageLayout>
+            <MainContent />
+        </PageLayout>
+    );
+}
