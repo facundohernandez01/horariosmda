@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './styles/App.css';
 import { PageLayout } from './components/PageLayout';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import Button from 'react-bootstrap/Button';

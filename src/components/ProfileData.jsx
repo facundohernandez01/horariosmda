@@ -6,7 +6,7 @@ import React from "react";
  */
 export const ProfileData = (props) => {
     return (
-        <div id="profile-div">
+        <div>
             <p><strong>Nombre </strong> {props.graphData.givenName}</p>
             <p><strong>Apellido </strong> {props.graphData.surname}</p>
             <p><strong>Email: </strong> {props.graphData.userPrincipalName}</p>
