@@ -44,10 +44,11 @@ const MainContent = () => {
         <div className="App">
             <AuthenticatedTemplate>
                 {/* 👇 Aquí renderizas directamente tu app */}
-                <ShiftScheduler />
             </AuthenticatedTemplate>
 
             <UnauthenticatedTemplate>
+            <ShiftScheduler />
+
                 <h5 className="card-title">Inicia sesión para ver el sistema de turnos.</h5>
             </UnauthenticatedTemplate>
         </div>
