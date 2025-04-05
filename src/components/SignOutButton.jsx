@@ -1,32 +1,49 @@
-import React from "react";
-import { useMsal } from "@azure/msal-react";
-import DropdownButton from "react-bootstrap/DropdownButton";
-import Dropdown from "react-bootstrap/Dropdown";
+import React, { useState } from 'react';
+import { useMsal } from '@azure/msal-react';
+import { Button, Menu, MenuItem } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
 
-/**
- * Renders a sign-out button
- */
 export const SignOutButton = () => {
     const { instance } = useMsal();
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
 
-    const handleLogout = (logoutType) => {
-        if (logoutType === "popup") {
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleLogout = (type) => {
+        handleClose();
+        if (type === 'popup') {
             instance.logoutPopup({
-                postLogoutRedirectUri: "/",
-                mainWindowRedirectUri: "/"
+                postLogoutRedirectUri: '/',
+                mainWindowRedirectUri: '/',
             });
-        } else if (logoutType === "redirect") {
+        } else if (type === 'redirect') {
             instance.logoutRedirect({
-                postLogoutRedirectUri: "/",
+                postLogoutRedirectUri: '/',
             });
         }
-    }
+    };
 
-    
     return (
-        <DropdownButton variant="secondary" className="ml-auto" drop="start" title="Sign Out">
-            <Dropdown.Item as="button" onClick={() => handleLogout("popup")}>Sign out using Popup</Dropdown.Item>
-            <Dropdown.Item as="button" onClick={() => handleLogout("redirect")}>Sign out using Redirect</Dropdown.Item>
-        </DropdownButton>
-    )
-}
+        <>
+            <Button
+                variant="outlined"
+                color="inherit"
+                onClick={handleClick}
+                startIcon={<LogoutIcon />}
+            >
+                Cerrar sesión
+            </Button>
+            <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+                <MenuItem onClick={() => handleLogout('popup')}>Cerrar sesión (Popup)</MenuItem>
+                <MenuItem onClick={() => handleLogout('redirect')}>Cerrar sesión (Redirect)</MenuItem>
+            </Menu>
+        </>
+    );
+};

@@ -1,30 +1,37 @@
-import React from "react";
-import { useMsal } from "@azure/msal-react";
-import { loginRequest } from "../authConfig";
-import DropdownButton from "react-bootstrap/DropdownButton";
-import Dropdown from "react-bootstrap/Dropdown";
+import React, { useState } from 'react';
+import { Button, Menu, MenuItem } from '@mui/material';
+import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../authConfig';
 
-/**
- * Renders a drop down button with child buttons for logging in with a popup or redirect
- */
 export const SignInButton = () => {
-    const { instance } = useMsal();
+  const { instance } = useMsal();
+  const [anchorEl, setAnchorEl] = useState(null);
 
-    const handleLogin = (loginType) => {
-        if (loginType === "popup") {
-            instance.loginPopup(loginRequest).catch(e => {
-                console.log(e);
-            });
-        } else if (loginType === "redirect") {
-            instance.loginRedirect(loginRequest).catch(e => {
-                console.log(e);
-            });
-        }
+  const handleLogin = (type) => {
+    if (type === 'popup') {
+      instance.loginPopup(loginRequest).catch(console.error);
+    } else if (type === 'redirect') {
+      instance.loginRedirect(loginRequest).catch(console.error);
     }
-    return (
-        <DropdownButton variant="secondary" className="ml-auto" drop="start" title="Sign In">
-            <Dropdown.Item as="button" onClick={() => handleLogin("popup")}>Sign in using Popup</Dropdown.Item>
-            <Dropdown.Item as="button" onClick={() => handleLogin("redirect")}>Sign in using Redirect</Dropdown.Item>
-        </DropdownButton>
-    )
-}
+    setAnchorEl(null);
+  };
+
+  return (
+    <>
+      <Button
+        variant="contained"
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+      >
+        Iniciar sesión
+      </Button>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        <MenuItem onClick={() => handleLogin('popup')}>Iniciar con Popup</MenuItem>
+        <MenuItem onClick={() => handleLogin('redirect')}>Iniciar con Redirect</MenuItem>
+      </Menu>
+    </>
+  );
+};

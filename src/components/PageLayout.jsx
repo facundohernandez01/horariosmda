@@ -1,38 +1,36 @@
-/*
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License.
- */
-
 import React from 'react';
-import Navbar from 'react-bootstrap/Navbar';
-
+import { AppBar, Toolbar, Typography, Box, Container } from '@mui/material';
 import { useIsAuthenticated } from '@azure/msal-react';
 import { SignInButton } from './SignInButton';
 import { SignOutButton } from './SignOutButton';
 
-/**
- * Renders the navbar component with a sign-in or sign-out button depending on whether or not a user is authenticated
- * @param props
- */
-export const PageLayout = (props) => {
+export const PageLayout = ({ children }) => {
     const isAuthenticated = useIsAuthenticated();
 
     return (
         <>
-            <Navbar bg="primary" variant="dark" className="navbarStyle">
-                <a className="navbar-brand" href="/">
-                    Microsoft Identity Platform
-                </a>
-                <div className="collapse navbar-collapse justify-content-end">
-                    {isAuthenticated ? <SignOutButton /> : <SignInButton />}
-                </div>
-            </Navbar>
-            <h5>
-                <center>Welcome to the Microsoft Authentication Library For Javascript - React Quickstart</center>
-            </h5>
-            <br />
-            <br />
-            {props.children}
+            <AppBar position="static" color="primary">
+                <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="h6" component="a" href="/" sx={{ textDecoration: 'none', color: 'inherit' }}>
+                        Turnos MDA
+                    </Typography>
+                    <Box>
+                        {isAuthenticated ? <SignOutButton /> : <SignInButton />}
+                    </Box>
+                </Toolbar>
+            </AppBar>
+
+            {/* Podés poner un subtítulo o eliminar esto */}
+            <Box mt={2} mb={2}>
+                <Typography align="center" variant="subtitle1">
+                    Bienvenido a la app de horarios
+                </Typography>
+            </Box>
+
+            {/* Contenido principal */}
+            <Container maxWidth="lg">
+                {children}
+            </Container>
         </>
     );
 };

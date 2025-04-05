@@ -27,11 +27,11 @@ const ProfileContent = () => {
 
     return (
         <>
-            <h5 className="card-title">Bienvenido, {accounts[0].name}</h5>
+            <h5>Bienvenido, {accounts[0].name}</h5>
             {graphData ? (
                 <ProfileData graphData={graphData} />
             ) : (
-                <Button variant="secondary" onClick={RequestProfileData}>
+                <Button onClick={RequestProfileData}>
                     Obtener perfil de Microsoft
                 </Button>
             )}
@@ -41,7 +41,7 @@ const ProfileContent = () => {
 
 const MainContent = () => {
     return (
-        <div className="App">
+        <div>
             <AuthenticatedTemplate>
                 {/* 👇 Aquí renderizas directamente tu app */}
             </AuthenticatedTemplate>
