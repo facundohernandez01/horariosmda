@@ -24,7 +24,7 @@ const MainContent = () => {
 
   return (
     
-    <Box sx={{ p: 3 }}>
+    <>
     <Navbar
         onOpenCustom={() => setModalOpen(true)}
         onOpenInactive={() => setInactiveModalOpen(true)}
@@ -56,7 +56,7 @@ const MainContent = () => {
           <SignInButton />
         </Box>
       </UnauthenticatedTemplate>
-    </Box>
+    </>
   );
 };
 

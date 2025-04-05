@@ -12,10 +12,10 @@ const Navbar = ({
     <AppBar position="static" color="primary">
       <Toolbar>
         <Button color="inherit" onClick={onOpenCustom}>
-          Add Custom
+          Custom dia/hs
         </Button>
         <Button color="inherit" onClick={onOpenInactive}>
-          Add Inactive
+          Desactiva dias
         </Button>
         <Button color="inherit" onClick={onOpenVacaciones}>
           Vacaciones
@@ -24,7 +24,7 @@ const Navbar = ({
           Configuración
         </Button>
         <Button color="inherit" onClick={onOpenRotation}>
-          Rotación General
+          Redefine rotación
         </Button>
       </Toolbar>
     </AppBar>
