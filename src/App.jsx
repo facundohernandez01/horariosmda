@@ -24,7 +24,7 @@ const ShiftScheduler = () => {
   const [configurations, setConfigurations] = useState({});
   const [rotationConfig, setRotationConfig] = useState([]);
   const [schedule, setSchedule] = useState([]);
-  const startDate = "2025-01-01";
+  const startDate = "2025-05-19";
   const numWeeks = 52;
 
   useEffect(() => {
@@ -96,9 +96,7 @@ const ShiftScheduler = () => {
         }
         label="Expandir todas las semanas"
       />
-      <Button variant="contained" onClick={() => setRotationModalOpen(true)}>
-        Definir Rotación General
-      </Button>
+
       <Modales
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
