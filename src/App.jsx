@@ -36,7 +36,7 @@ const ShiftScheduler = () => {
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [expandAll, setExpandAll] = useState(false); // Estado para manejar el interruptor
   const [configurations, setConfigurations] = useState({});
-  const startDate = "2025-01-01";
+  const startDate = "2026-01-01";
   const numWeeks = 52;
   const schedule = generateSchedule(startDate, numWeeks);
 
