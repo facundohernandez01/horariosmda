@@ -11,6 +11,7 @@ const getMonday = (date) => {
 };
 
 const generateSchedule = (startDate, numWeeks) => {
+  console.log("GENERATE FROM:", startDate);
   let schedule = [];
   let date = getMonday(startDate);
   const shiftRotation = [
