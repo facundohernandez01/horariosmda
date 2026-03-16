@@ -36,9 +36,11 @@ const ShiftScheduler = () => {
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [expandAll, setExpandAll] = useState(false); // Estado para manejar el interruptor
   const [configurations, setConfigurations] = useState({});
-  const startDate = `${new Date().getFullYear()}-01-01`;
-  const numWeeks = 52;
+  const currentYear = new Date().getFullYear();
+  const startDate = new Date(currentYear, 0, 1);
+  const numWeeks = 53;
   const schedule = generateSchedule(startDate, numWeeks);
+
 
   useEffect(() => {
     fetchHolidays(setHolidays);
