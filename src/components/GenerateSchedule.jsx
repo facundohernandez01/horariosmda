@@ -12,7 +12,7 @@ const getMonday = (date) => {
 
 const generateSchedule = (startDate, numWeeks) => {
   let schedule = [];
-  let date = getMonday(new Date(startDate));
+  let date = getMonday(startDate);
   const shiftRotation = [
     ["22-6", "6-14", "14-22"],  // Semana 1
     ["14-22", "22-6", "6-14"],  // Semana 2
