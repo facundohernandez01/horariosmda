@@ -24,7 +24,7 @@ const ShiftScheduler = () => {
   const [configurations, setConfigurations] = useState({});
   const [rotationConfig, setRotationConfig] = useState([]);
   const [schedule, setSchedule] = useState([]);
-  const startDate = "2025-05-19";
+  const startDate = "2025-12-29";
   const numWeeks = 52;
 
   useEffect(() => {
