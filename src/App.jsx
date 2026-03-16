@@ -38,6 +38,7 @@ const ShiftScheduler = () => {
   const [configurations, setConfigurations] = useState({});
   const currentYear = new Date().getFullYear();
   const startDate = new Date(currentYear, 0, 1);
+  console.log("START DATE:", startDate);
   const numWeeks = 53;
   const schedule = generateSchedule(startDate, numWeeks);
 
