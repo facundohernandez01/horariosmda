@@ -10,6 +10,7 @@ import {
   Switch,
   FormControlLabel,
   Box,
+  Tooltip
 } from "@mui/material";
 import Modales from "./components/Modales";
 import {
@@ -297,16 +298,33 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                             : day.shifts[hour] || "";
                           return (
                             <>
-                            <TableCell
-                              key={hour}
-                              style={{
-                                border: "1px solid #000",
-                                backgroundColor,
-                                color: customSchedule ? "#fff" : "#000",
-                              }}
-                            >
-                              {content}
-                            </TableCell>
+                  <TableCell
+                    key={hour}
+                    style={{
+                      border: "1px solid #000",
+                      backgroundColor,
+                      padding: 0,
+                      textAlign: "center",
+                      color: customSchedule ? "#fff" : "#000",
+                    }}
+                  >
+                    {customSchedule ? (
+                      <Tooltip title={customSchedule.name} arrow placement="top">
+                        <span style={{
+                          display: "block",
+                          width: "100%",
+                          height: "100%",
+                          cursor: "pointer",
+                          fontSize: "10px",
+                          lineHeight: "20px",
+                        }}>
+                          ●
+                        </span>
+                      </Tooltip>
+                    ) : (
+                      content
+                    )}
+                  </TableCell>
                           </>
 
                           );
