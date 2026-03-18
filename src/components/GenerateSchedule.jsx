@@ -1,7 +1,5 @@
-const employees = ["BF", "JG", "LL"];
 const shifts = ["6-14", "14-22", "22-6"];
 const shiftHours = { "6-14": [6, 14], "14-22": [14, 22], "22-6": [22, 6] };
-const extraEmployees = ["Gabi", "Facu", "Extras", "Leo"];
 
 const getMonday = (date) => {
   const day = date.getDay();
@@ -9,8 +7,7 @@ const getMonday = (date) => {
   date.setDate(diff);
   return new Date(date.setHours(0, 0, 0, 0)); // asegurarse de que la hora sea 00:00:00
 };
-
-const generateSchedule = (startDate, numWeeks) => {
+const generateSchedule = (startDate, numWeeks, employees = ["BF", "JG", "LL"], extraEmployees = ["LC", "GG", "FH", "EX"]) => {
   console.log("GENERATE FROM:", startDate);
   let schedule = [];
   let date = getMonday(startDate);
