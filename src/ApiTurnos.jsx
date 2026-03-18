@@ -1,7 +1,7 @@
 import generateSchedule from "./components/GenerateSchedule";
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import { fetchVacaciones } from "./firebase/firebaseFunctions";
 // ==============================
 // Helpers
 // ==============================
@@ -137,13 +137,35 @@ const getNextHoliday = (schedule, holidays) => {
     turnos: getShiftForDate(schedule, nextHoliday),
   };
 };
+// ==============================
+//  VACACIONES
+// ==============================
+const getProximaVacacion = (vacaciones) => {
+  const today = new Date();
 
+  const proxima = vacaciones
+    .filter((v) => new Date(v.hasta + "T00:00:00") >= today) // no mostrar las ya terminadas
+    .sort((a, b) => new Date(a.desde) - new Date(b.desde))   // ordenar por fecha
+    .find((v) => new Date(v.desde + "T00:00:00") >= today);  // la próxima que no empezó
+
+  if (!proxima) return null;
+
+  return {
+    nombre: proxima.nombre,
+    desde: proxima.desde,
+    hasta: proxima.hasta,
+  };
+};
 // ==============================
 // COMPONENTE PRINCIPAL
 // ==============================
 const ApiTurnos = ({ startDate, turnoEmployee, extraEmployees }) => {
   const [holidays, setHolidays] = useState([]);
   const currentYear = new Date().getFullYear();
+  const [vacaciones, setVacaciones] = useState([]);
+  useEffect(() => {
+    fetchVacaciones(setVacaciones);
+  }, []);
   const schedule = generateSchedule(startDate, 54, turnoEmployee, extraEmployees);
   useEffect(() => {
     const year = new Date().getFullYear();
@@ -160,10 +182,13 @@ const ApiTurnos = ({ startDate, turnoEmployee, extraEmployees }) => {
   const sabado_proximo = getNextSaturday(schedule);
   const semana_proxima = getNextWeekShifts(schedule);
   const proximo_feriado = getNextHoliday(schedule, holidays);
+  const vacacion = getProximaVacacion(vacaciones); // ✅ nuevo
+
   const result = {
     sabado_proximo,
     semana_proxima,
     proximo_feriado,
+    proxima_vacacion: vacacion
   };
 
   return (
