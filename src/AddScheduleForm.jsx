@@ -1,14 +1,19 @@
 import React, { useState } from "react";
-import { TextField, Button, Box } from "@mui/material";
+import { TextField, Button, Box, Tooltip } from "@mui/material";
 
-const AddScheduleForm = ({ onSave }) => {
+const AddScheduleForm = ({ onSave, configurations }) => {
   const [dates, setDates] = useState([]);
   const [startHour, setStartHour] = useState("");
   const [endHour, setEndHour] = useState("");
-  const [color, setColor] = useState("");
+  const [color, setColor] = useState("#f60000");
   const [name, setName] = useState("");
   const [rangeStartDate, setRangeStartDate] = useState("");
   const [rangeEndDate, setRangeEndDate] = useState("");
+
+  const allColors = {
+    ...(configurations?.colors || {}),
+    ...(configurations?.extraColors || {}),
+  };
 
   const handleAddDate = () => {
     setDates([...dates, ""]);
@@ -84,6 +89,27 @@ const AddScheduleForm = ({ onSave }) => {
           fullWidth
           margin="normal"
         />
+         <Box sx={{ mt: 1, mb: 1 }}>
+          <label style={{ fontSize: 12, color: "#666" }}>Colores predefinidos:</label>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 0.5 }}>
+            {Object.entries(allColors).map(([key, hex]) => (
+              <Tooltip key={key} title={key} arrow>
+                <Box
+                  onClick={() => setColor(hex)}
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    backgroundColor: hex,
+                    cursor: "pointer",
+                    border: color === hex ? "3px solid #000" : "2px solid #ccc",
+                    transition: "border 0.15s",
+                  }}
+                />
+              </Tooltip>
+            ))}
+          </Box>
+        </Box>
         <TextField
           label="Color"
           type="color"

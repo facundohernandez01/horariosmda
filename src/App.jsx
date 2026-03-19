@@ -41,6 +41,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ShiftScheduler startDate={startDate} turnoEmployee={turnoEmployee} extraEmployees={extraEmployees}/>} />
         <Route path="/api-turnos" element={<ApiTurnos startDate={startDate} turnoEmployee={turnoEmployee} extraEmployees={extraEmployees}/>} />
+        <Route path="/:yearMonth" element={<ShiftScheduler startDate={startDate} turnoEmployee={turnoEmployee} extraEmployees={extraEmployees} />} />
       </Routes>
     </Router>
   );

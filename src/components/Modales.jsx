@@ -152,7 +152,11 @@ const Modales = ({
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
-          <CustomScheduleForm onSave={(customSchedule) => handleSaveCustomSchedule(customSchedule, setCustomSchedules, customSchedules, setModalOpen)} />
+          {/* <CustomScheduleForm onSave={(customSchedule) => handleSaveCustomSchedule(customSchedule, setCustomSchedules, customSchedules, setModalOpen)} /> */}
+            <CustomScheduleForm 
+            onSave={(customSchedule) => handleSaveCustomSchedule(customSchedule, setCustomSchedules, customSchedules, setModalOpen)}
+            configurations={configurations}
+          />
         </Box>
       </Modal>
 

@@ -163,6 +163,8 @@ const ApiTurnos = ({ startDate, turnoEmployee, extraEmployees }) => {
   const [holidays, setHolidays] = useState([]);
   const currentYear = new Date().getFullYear();
   const [vacaciones, setVacaciones] = useState([]);
+  const [loading, setLoading] = useState(true); 
+
   useEffect(() => {
     fetchVacaciones(setVacaciones);
   }, []);
@@ -170,19 +172,24 @@ const ApiTurnos = ({ startDate, turnoEmployee, extraEmployees }) => {
   useEffect(() => {
     const year = new Date().getFullYear();
     axios.get(`https://api.argentinadatos.com/v1/feriados/${year}`)
-      .then((res) => setHolidays(res.data.map((h) => h.fecha)))
+      .then((res) => {
+        setHolidays(res.data.map((h) => h.fecha));
+        setLoading(false); 
+      })      
       .catch((err) => console.error("Error fetching holidays", err));
   }, []);
   // 🔍 DEBUG - sacalo después de resolver
-  console.log("startDate recibido:", startDate);
-  console.log("Primeras 3 semanas generadas:");
+
   schedule.slice(0, 3).forEach((week, i) => {
     console.log(`Semana ${i + 1} (week%3=${i%3}):`, week.date, week.summary);
   });
+
+  if (loading) return <pre>Cargando...</pre>; 
+
   const sabado_proximo = getNextSaturday(schedule);
   const semana_proxima = getNextWeekShifts(schedule);
   const proximo_feriado = getNextHoliday(schedule, holidays);
-  const vacacion = getProximaVacacion(vacaciones); // ✅ nuevo
+  const vacacion = getProximaVacacion(vacaciones); 
 
   const result = {
     sabado_proximo,

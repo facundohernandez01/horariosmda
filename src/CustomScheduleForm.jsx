@@ -23,7 +23,7 @@ const TabPanel = (props) => {
   );
 };
 
-const CustomScheduleForm = ({ onSave }) => {
+const CustomScheduleForm = ({ onSave, configurations }) => {
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
@@ -38,7 +38,7 @@ const CustomScheduleForm = ({ onSave }) => {
         <Tab label="Buscar por Fecha" />
       </Tabs>
       <TabPanel value={tabValue} index={0}>
-        <AddScheduleForm onSave={onSave} />
+          <AddScheduleForm onSave={onSave} configurations={configurations} />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
         <SearchScheduleForm />

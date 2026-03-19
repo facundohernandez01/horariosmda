@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef  } from "react";
 import {
   Table,
   TableBody,
@@ -24,6 +24,7 @@ import { colors, extraColors, daysOfWeek, extraEmployees, dayInitials, loadConfi
 import InitialConfigLoader from "./InitialConfigLoader";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase/firebaseConfig";
+import { useParams } from "react-router-dom";
 
 const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   console.log("extraEmployees prop:", extraEmployees); // ¿es el array de Firebase o null?
@@ -44,7 +45,30 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   console.log("ShiftScheduler startDate:", startDate);
   const numWeeks = 53;
   const schedule = generateSchedule(startDate, numWeeks, turnoEmployee, extraEmployees);
+  
+  const { yearMonth } = useParams(); // ej: "202603" o "2026-03"
+  const weekRefs = useRef({});
+  const targetMonth = yearMonth
+    ? yearMonth.replace(/(\d{4})(\d{2})/, "$1-$2")
+    : null;
 
+  useEffect(() => {
+    if (!targetMonth || !schedule.length) return;
+
+    const targetIndex = schedule.findIndex((week) =>
+      week.date.startsWith(targetMonth)
+    );
+
+    if (targetIndex !== -1) {
+      setExpandedWeek(targetIndex);
+      setTimeout(() => {
+        weekRefs.current[targetIndex]?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 300);
+    }
+  }, [targetMonth, schedule.length]);
 
   useEffect(() => {
     fetchHolidays(setHolidays);
@@ -178,6 +202,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                   </>
                 ) : null}
                 <TableRow
+                  ref={(el) => (weekRefs.current[index] = el)} 
                   style={{
                     backgroundColor: isHolidayInWeek(week) ? "#FFC0CB" : "#e0e0e0",
                     fontWeight: "bold",
