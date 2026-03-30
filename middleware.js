@@ -1,7 +1,7 @@
 export function middleware(req) {
   const url = req.nextUrl;
 
-  // ✅ dejar pública esta ruta
+  // pública
   if (url.pathname.startsWith('/api-turnos')) {
     return;
   }
@@ -28,3 +28,7 @@ export function middleware(req) {
     },
   });
 }
+
+export const config = {
+  matcher: '/:path*',
+};
