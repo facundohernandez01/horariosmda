@@ -14,7 +14,11 @@ export default async function handler(req) {
     const [user, pass] = decoded.split(':');
 
     if (user === USER && pass === PASS) {
-      return fetch(req); // deja pasar al sitio
+      // 👇 IMPORTANTE: ir directo al index.html
+      const url = new URL(req.url);
+      url.pathname = '/index.html';
+
+      return fetch(url);
     }
   }
 

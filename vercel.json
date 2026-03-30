@@ -15,13 +15,6 @@
     {
       "src": "/(.*)",
       "dest": "/api/basic-auth"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ]
 }
