@@ -1,20 +1,8 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "^/api-turnos/(.*)",
-      "dest": "/api-turnos/$1"
-    },
-    {
-      "src": "^/api-turnos$",
-      "dest": "/api-turnos"
-    },
-    {
-      "src": "^/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/basic-auth"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
