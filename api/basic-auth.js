@@ -3,38 +3,29 @@ export const config = {
 };
 
 export default async function handler(req) {
-  const url = new URL(req.url);
-
-  // ✅ 1. dejar pasar TODAS las APIs
-  if (url.pathname.startsWith('/api')) {
-    return fetch(req);
-  }
-
-  // 🔐 2. auth
-  const auth = req.headers.get('authorization');
-
   const USER = process.env.BASIC_AUTH_USER?.trim();
   const PASS = process.env.BASIC_AUTH_PASS?.trim();
 
-  if (auth) {
+  const auth = req.headers.get('authorization');
+
+  if (auth?.startsWith('Basic ')) {
     const encoded = auth.split(' ')[1];
     const decoded = atob(encoded);
-    const [user, pass] = decoded.split(':');
-
-    // DEBUG (sacalo después)
-    console.log("ENV USER:", USER);
-    console.log("INPUT USER:", user);
+    const [user, ...rest] = decoded.split(':');
+    const pass = rest.join(':'); // por si la clave tiene ':'
 
     if (user === USER && pass === PASS) {
-      url.pathname = '/index.html';
-      return fetch(url);
+      // Sirve el index.html de la SPA
+      const spaUrl = new URL('/index.html', req.url);
+      return fetch(spaUrl.toString());
     }
   }
 
-  return new Response('Auth required', {
+  return new Response('Unauthorized', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="Protected Area"',
+      'WWW-Authenticate': 'Basic realm="Área Protegida"',
+      'Content-Type': 'text/plain',
     },
   });
 }
