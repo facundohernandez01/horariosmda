@@ -12,12 +12,24 @@ export default async function handler(req) {
     const encoded = auth.split(' ')[1];
     const decoded = atob(encoded);
     const [user, ...rest] = decoded.split(':');
-    const pass = rest.join(':'); // por si la clave tiene ':'
+    const pass = rest.join(':');
 
     if (user === USER && pass === PASS) {
-      // Sirve el index.html de la SPA
-      const spaUrl = new URL('/index.html', req.url);
-      return fetch(spaUrl.toString());
+      // Leer el index.html del build estático directamente
+      const base = new URL(req.url);
+      base.pathname = '/index.html';
+
+      const res = await fetch(base, {
+        // Header especial para que Vercel no re-rutee internamente
+        headers: { 'x-middleware-subrequest': '1' },
+      });
+
+      return new Response(res.body, {
+        status: 200,
+        headers: {
+          'content-type': 'text/html',
+        },
+      });
     }
   }
 
@@ -25,7 +37,6 @@ export default async function handler(req) {
     status: 401,
     headers: {
       'WWW-Authenticate': 'Basic realm="Área Protegida"',
-      'Content-Type': 'text/plain',
     },
   });
 }
