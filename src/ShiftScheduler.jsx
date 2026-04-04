@@ -134,18 +134,36 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
 
   const { yearMonth } = useParams();
   const weekRefs = useRef({});
+  const scrollTargetRef = useRef(null); // índice al que hay que scrollear después del expand
   const targetMonth = yearMonth ? yearMonth.replace(/(\d{4})(\d{2})/, "$1-$2") : null;
 
+  // 1️⃣ Cuando cambia la URL: encontrar la semana y expandirla
   useEffect(() => {
     if (!targetMonth || !schedule.length) return;
     const targetIndex = schedule.findIndex((week) => week.date.startsWith(targetMonth));
     if (targetIndex !== -1) {
+      scrollTargetRef.current = targetIndex;
       setExpandedWeek(targetIndex);
-      setTimeout(() => {
-        weekRefs.current[targetIndex]?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 300);
     }
   }, [targetMonth, schedule.length]);
+
+  // 2️⃣ Cuando expandedWeek cambia y hay un scroll pendiente, scrollear
+  useEffect(() => {
+    if (scrollTargetRef.current === null) return;
+    const idx = scrollTargetRef.current;
+    scrollTargetRef.current = null;
+
+    // Esperar a que React termine de renderizar las filas expandidas
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = weekRefs.current[idx];
+        if (!el) return;
+        const navbarHeight = 56; // altura del sticky navbar
+        const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight - 8;
+        window.scrollTo({ top, behavior: "smooth" });
+      });
+    });
+  }, [expandedWeek]);
 
   useEffect(() => {
     fetchHolidays(setHolidays);
