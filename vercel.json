@@ -1,6 +1,18 @@
 {
   "routes": [
     {
+      "src": "^/favicon\\.ico$",
+      "dest": "/favicon.ico"
+    },
+    {
+      "src": "^/favicon\\.svg$",
+      "dest": "/favicon.svg"
+    },
+    {
+      "src": "^/favicon\\.png$",
+      "dest": "/favicon.png"
+    },
+    {
       "src": "^/api-turnos(.*)",
       "dest": "/api-turnos$1"
     },
