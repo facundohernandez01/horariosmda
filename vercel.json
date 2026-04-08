@@ -22,7 +22,7 @@
     },
     {
       "src": "^/index\\.html$",
-      "dest": "/api/basic-auth"
+      "dest": "/index.html"
     },
     {
       "src": "^/$",
