@@ -13,19 +13,15 @@
       "dest": "/favicon.png"
     },
     {
-      "src": "^/api-turnos(.*)",
-      "dest": "/api-turnos$1"
-    },
-    {
-      "src": "^/index\\.html$",
-      "dest": "/index.html"
-    },
-    {
       "src": "^/assets/(.*)",
       "dest": "/assets/$1"
     },
     {
-      "src": "/(.*)",
+      "src": "^/api-turnos/?$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "^(?!/api-turnos)(.*)",
       "dest": "/api/basic-auth"
     }
   ]
