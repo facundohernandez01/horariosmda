@@ -17,11 +17,19 @@
       "dest": "/assets/$1"
     },
     {
-      "src": "^/api-turnos/?$",
+      "src": "^/api-turnos(.*)",
       "dest": "/index.html"
     },
     {
-      "src": "^(?!/api-turnos)(.*)",
+      "src": "^/index\\.html$",
+      "dest": "/api/basic-auth"
+    },
+    {
+      "src": "^/$",
+      "dest": "/api/basic-auth"
+    },
+    {
+      "src": "/(.*)",
       "dest": "/api/basic-auth"
     }
   ]
