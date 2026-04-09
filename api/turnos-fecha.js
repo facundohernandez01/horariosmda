@@ -130,7 +130,6 @@ const generateSchedule = (startDate, numWeeks, employees = ["BF", "JG", "LL"], e
 // HELPER: semana para una fecha dada
 // ==============================
 const getWeekShiftsForDate = (schedule, targetDate) => {
-  // Obtener el lunes de la semana que contiene targetDate
   const target = new Date(targetDate + "T00:00:00");
   const monday = getMonday(new Date(target));
   const mondayStr = monday.toISOString().split("T")[0];
@@ -139,9 +138,20 @@ const getWeekShiftsForDate = (schedule, targetDate) => {
   if (!weekFound) return null;
 
   const s = weekFound.summary;
+  const esSabado = target.getDay() === 6;
+
+  // Si es sábado, buscar el empleado específico de ese día (shifts[10])
+  let empleado_sabado = null;
+  if (esSabado) {
+    const sabado = weekFound.days.find(d => new Date(d.date).getDay() === 6);
+    if (sabado) empleado_sabado = sabado.shifts[10] || null;
+  }
+
   return {
     semana_desde: mondayStr,
     fecha_consultada: targetDate,
+    es_sabado: esSabado,
+    empleado_sabado,
     mañana: s["6-14"],
     tarde: s["14-22"],
     noche: s["22-6"],
