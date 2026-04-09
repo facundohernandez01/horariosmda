@@ -23,7 +23,7 @@
     {
       "src": "^/api/turnos-fecha$",
       "dest": "/api/turnos-fecha"
-    }.
+    },
     {
       "src": "^/api-turnos(.*)",
       "dest": "/index.html"
