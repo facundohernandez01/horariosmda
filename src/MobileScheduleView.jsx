@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { overtimeOnDate } from "./components/ScheduleManagement";
 import { Box, Typography, Chip, Collapse, IconButton } from "@mui/material";
 
 /**
@@ -222,7 +223,7 @@ const MobileScheduleView = ({
                               </Box>
                             ))}
 
-                            {overtime.filter(e => e.date === dateStr).map(e => <Chip key={e.id} size="small" color="warning" label={`Extra ${e.employee} ${e.start}–${e.end} · ${e.reportedAt ? "Reportada" : "Pendiente"}`} />)}
+                            {overtime.flatMap(e => overtimeOnDate(e,dateStr).map(s => <Chip key={e.id+"-"+s.date} size="small" color="warning" label={`Extra ${e.employee} ${String(s.start%24).padStart(2,"0")}:00–${String(s.end%24).padStart(2,"0")}:00 · ${e.reportedAt ? "Reportada" : "Pendiente"}`} />))}
                             {dayCustom.map((cs, ci) => (
                               <Box
                                 key={`cs-${ci}`}
