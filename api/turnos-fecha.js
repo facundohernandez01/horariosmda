@@ -1,3 +1,4 @@
+import { applyRotationRules } from "../src/components/rotationRules.js";
 export const config = { runtime: "edge" };
 
 // ==============================
@@ -137,7 +138,7 @@ const getWeekShiftsForDate = (schedule, targetDate) => {
   const weekFound = schedule.find((w) => w.date === mondayStr);
   if (!weekFound) return null;
 
-  const s = weekFound.summary;
+  const s = weekFound.days.find(d=>d.date.toISOString().slice(0,10)===targetDate)?.summary || weekFound.summary;
   const esSabado = target.getDay() === 6;
 
   // Si es sábado, buscar el empleado específico de ese día (shifts[10])
@@ -184,10 +185,11 @@ export default async function handler(req) {
 
     // Leer configuraciones de Firestore
     const configSnap = await firestoreGet("configuraciones");
-    let startDate = null, turnoEmployee = null, extraEmployees = null;
+    let startDate = null, turnoEmployee = null, extraEmployees = null, rotationRules = [];
 
     for (const doc of configSnap.documents || []) {
       const data = parseDoc(doc);
+      if (doc.name?.endsWith("/initialConfig")) rotationRules = data.rotationRules || [];
       if (data.turnoEmployee) turnoEmployee = data.turnoEmployee;
       if (data.extraEmployees) extraEmployees = data.extraEmployees;
       if (data.fechaInicioRotacion?.[0]) {
@@ -210,7 +212,7 @@ export default async function handler(req) {
     const diffWeeks = Math.ceil(diffMs / (7 * 24 * 60 * 60 * 1000)) + 4;
     const numWeeks = Math.max(54, diffWeeks);
 
-    const schedule = generateSchedule(startDate, numWeeks, turnoEmployee, extraEmployees);
+    const schedule = applyRotationRules(generateSchedule(startDate, numWeeks, turnoEmployee, extraEmployees), rotationRules);
 
     const result = getWeekShiftsForDate(schedule, fecha);
 
