@@ -3,7 +3,7 @@ import { Modal, Box, Button, TextField, MenuItem, Select, FormControl, InputLabe
 import CustomScheduleForm from "../CustomScheduleForm";
 import InactiveScheduleForm from "../InactiveScheduleForm";
 import VacacionesForm from "../VacacionesForm";
-import { handleSaveCustomSchedule, handleSaveInactiveSchedule, handleSaveVacaciones } from "../firebase/firebaseFunctions";
+import { handleSaveCustomSchedule, handleSaveInactiveSchedule, handleSaveVacaciones, deleteVacacion } from "../firebase/firebaseFunctions";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
@@ -139,7 +139,7 @@ const Modales = ({
     <div>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: "min(94vw, 520px)", maxHeight:"90vh", overflowY:"auto", bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
           {/* <CustomScheduleForm onSave={(customSchedule) => handleSaveCustomSchedule(customSchedule, setCustomSchedules, customSchedules, setModalOpen)} /> */}
             <CustomScheduleForm 
             onSave={(customSchedule) => handleSaveCustomSchedule(customSchedule, setCustomSchedules, customSchedules, setModalOpen)}
@@ -156,7 +156,7 @@ const Modales = ({
 
       <Modal open={vacacionesModalOpen} onClose={() => setVacacionesModalOpen(false)}>
         <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
-          <VacacionesForm onSave={(vacacion) => handleSaveVacaciones(vacacion, setVacaciones, vacaciones, setVacacionesModalOpen)} />
+          <VacacionesForm configurations={configurations} vacaciones={vacaciones} onDelete={async id=>{await deleteVacacion(id);setVacaciones(prev=>prev.filter(v=>v.id!==id));}} onSave={(vacacion) => handleSaveVacaciones(vacacion, setVacaciones, vacaciones, setVacacionesModalOpen)} />
         </Box>
       </Modal>
 
