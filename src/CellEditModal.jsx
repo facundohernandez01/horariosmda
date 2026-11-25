@@ -177,7 +177,7 @@ const CellEditModal = ({
             </Box>
 
             <Button onClick={handleSave} variant="contained" sx={saveBtnStyle} fullWidth>
-              Guardar cambio
+              Aplicar cambio
             </Button>
           </Box>
         )}
@@ -223,7 +223,7 @@ const CellEditModal = ({
               <Box sx={{ width: 32, height: 32, borderRadius: "6px", background: color }} />
             </Box>
             <Button onClick={handleSave} variant="contained" sx={saveBtnStyle} fullWidth>
-              Guardar nota
+              Aplicar nota
             </Button>
           </Box>
         )}
@@ -242,6 +242,9 @@ const modalStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: { xs: "90vw", sm: 420 },
+  maxHeight:"calc(100dvh - 32px)",
+  overflowY:"auto",
+  overscrollBehavior:"contain",
   background: "linear-gradient(145deg, #0f0f1a, #1a1a2e)",
   border: "1px solid #00d4ff33",
   borderRadius: "16px",
