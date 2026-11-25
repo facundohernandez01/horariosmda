@@ -3,7 +3,7 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/
 import CustomScheduleForm from "../CustomScheduleForm";
 import InactiveScheduleForm from "../InactiveScheduleForm";
 import VacacionesForm from "../VacacionesForm";
-import { handleSaveCustomSchedule, handleSaveInactiveSchedule, handleSaveVacaciones, deleteVacacion, fetchCustomSchedules } from "../firebase/firebaseFunctions";
+import { handleSaveCustomSchedule, handleSaveInactiveSchedule, handleSaveVacaciones, deleteVacacion, fetchCustomSchedules, fetchInactiveSchedules } from "../firebase/firebaseFunctions";
 
 
 const Modales = ({
@@ -33,7 +33,7 @@ const Modales = ({
       </Dialog>
       <Dialog open={inactiveModalOpen} onClose={()=>setInactiveModalOpen(false)} fullWidth maxWidth="sm" scroll="paper" slotProps={{paper:{sx:{maxHeight:"calc(100dvh - 32px)",m:2,borderRadius:3,color:"text.primary"}}}}>
         <DialogTitle>Horarios inactivos</DialogTitle>
-        <DialogContent dividers><InactiveScheduleForm onSave={inactiveSchedule=>handleSaveInactiveSchedule(inactiveSchedule,setInactiveSchedules,inactiveSchedules,setInactiveModalOpen)}/></DialogContent>
+        <DialogContent dividers><InactiveScheduleForm rules={inactiveSchedules} configuredDays={configurations?.daysOfWeek} onChanged={()=>fetchInactiveSchedules(setInactiveSchedules)}/></DialogContent>
         <DialogActions><Button onClick={()=>setInactiveModalOpen(false)}>Cerrar</Button></DialogActions>
       </Dialog>
       <Dialog open={vacacionesModalOpen} onClose={() => setVacacionesModalOpen(false)}
