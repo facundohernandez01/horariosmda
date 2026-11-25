@@ -13,6 +13,7 @@ import {
   useTheme,
 } from "@mui/material";
 import ScheduleManagement, { useOvertime, overtimeOnDate } from "./components/ScheduleManagement";
+import VacationWarnings, { cellVacation, coverageWarnings, VACATION_COLOR, EXTRA_COLOR } from "./components/VacationWarnings";
 import Modales from "./components/Modales";
 import Navbar from "./Navbar";
 import CellEditModal from "./CellEditModal";
@@ -137,11 +138,19 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   const [selectedYear, setSelectedYear] = useState(() => /^\d{6}$/.test(yearMonth || "") ? Number(yearMonth.slice(0,4)) : currentYear);
   const firstYear = new Date(startDate).getFullYear();
   const numWeeks = Math.max(53, Math.ceil((Date.UTC(selectedYear + 1,0,7) - Date.UTC(firstYear,0,1))/604800000));
-  const schedule = generateSchedule(new Date(startDate), numWeeks, turnoEmployee, extraEmployees).filter(w => w.days.some(d => d.date.getFullYear() === selectedYear));
+  const today = new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Argentina/Buenos_Aires"}).format(new Date());
+  const warningYear = Math.max(currentYear+1,selectedYear,...vacaciones.map(v=>Number(v.hasta?.slice(0,4))||currentYear));
+  const allWeeks = generateSchedule(new Date(startDate), Math.max(numWeeks,Math.ceil((Date.UTC(warningYear+1,0,7)-Date.UTC(firstYear,0,1))/604800000)), turnoEmployee, extraEmployees);
+  const schedule = allWeeks.filter(w => w.days.some(d => d.date.getFullYear() === selectedYear));
+  const vacationStatus = (day,hour) => cellVacation(day,hour,vacaciones,turnoEmployee||[],extraEmployees||[],customSchedules,inactiveSchedules,configurations?.daysOfWeek||daysOfWeek);
+  const warnings = coverageWarnings(allWeeks,vacaciones,turnoEmployee||[],extraEmployees||[],holidays,customSchedules,inactiveSchedules,configurations?.daysOfWeek||daysOfWeek,today);
 
   const weekRefs = useRef({});
+  const [warningTarget,setWarningTarget] = useState(null);
   const scrollTargetRef = useRef(null); // índice al que hay que scrollear después del expand
   const targetMonth = yearMonth ? yearMonth.replace(/(\d{4})(\d{2})/, "$1-$2") : null;
+
+  useEffect(()=>{if(!warningTarget)return;const idx=schedule.findIndex(w=>w.days.some(d=>d.date.toISOString().slice(0,10)===warningTarget));if(idx<0)return;setExpandedWeek(idx);setWarningTarget(null);requestAnimationFrame(()=>requestAnimationFrame(()=>{const el=document.getElementById("schedule-week-"+idx);el?.scrollIntoView({behavior:"smooth",block:"center"});}));},[warningTarget,selectedYear,schedule.length]);
 
   // 1️⃣ Cuando cambia la URL: encontrar la semana y expandirla
   useEffect(() => {
@@ -172,7 +181,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   }, [expandedWeek]);
 
   useEffect(() => {
-    fetchHolidays(setHolidays);
+
     fetchCustomSchedules(setCustomSchedules);
     fetchInactiveSchedules(setInactiveSchedules);
     fetchVacaciones(setVacaciones);
@@ -187,6 +196,8 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
     };
     fetchConfigurations();
   }, []);
+
+  useEffect(()=>{let active=true;fetchHolidays(values=>{if(active)setHolidays(values);},Array.from({length:Math.max(1,warningYear-Math.min(currentYear,selectedYear)+1)},(_,i)=>Math.min(currentYear,selectedYear)+i));return()=>{active=false;};},[warningYear,currentYear,selectedYear]);
 
   const hours = [...Array(24).keys()];
 
@@ -239,6 +250,8 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
 
       <Box sx={{display:"flex",alignItems:"center",gap:2,p:2,color:"#e0e0ff"}}><label htmlFor="schedule-year">Año del calendario</label><select id="schedule-year" value={selectedYear} onChange={e=>{setSelectedYear(Number(e.target.value));setExpandedWeek(null);}}>{Array.from({length:Math.max(currentYear+1,selectedYear)-firstYear+1},(_,i)=>firstYear+i).map(y=><option key={y}>{y}</option>)}</select></Box>
       <ScheduleManagement employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} names={configurations?.employeeNames || {}} />
+      <Box sx={{px:2,pb:1,display:"flex",gap:2,flexWrap:"wrap",fontSize:12}}><span><span style={{display:"inline-block",width:16,height:10,background:VACATION_COLOR,marginRight:5}}/>Vacaciones</span><span style={{borderBottom:"3px solid "+EXTRA_COLOR}}>Extras / cobertura pendiente</span></Box>
+      <VacationWarnings warnings={warnings} names={configurations?.employeeNames} onNavigate={date=>{setSelectedYear(Number(date.slice(0,4)));setWarningTarget(date);}}/>
       {/* ── Modales existentes ───────────────────────── */}
       <Modales
         modalOpen={modalOpen}
@@ -273,6 +286,8 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
       {/* ── Vista Mobile ─────────────────────────────── */}
       {isMobile ? (
         <MobileScheduleView
+          vacationStatus={vacationStatus}
+          warningTargetIndex={expandedWeek}
           overtime={overtime}
           schedule={schedule}
           holidays={holidays}
@@ -352,6 +367,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
 
                   {/* ── Week summary row ──────────────────── */}
                   <TableRow
+                    id={"schedule-week-"+index}
                     ref={(el) => (weekRefs.current[index] = el)}
                     className="week-summary-row"
                     onClick={() => setExpandedWeek(expandedWeek === index ? null : index)}
@@ -378,7 +394,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                     </TableCell>
                     {hours.map((hour) => {
                       const emp = week.days[0].shifts[hour];
-                      const bg = emp ? getEmpColor(emp) : "#0d0d1e";
+                      const bg = vacationStatus(week.days[0],hour)==="vacation" ? VACATION_COLOR : emp ? getEmpColor(emp) : "#0d0d1e";
                       return (
                         <TableCell
                           key={hour}
@@ -492,6 +508,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                                   ? ""
                                   : day.shifts[hour] || "";
 
+                                const status = vacationStatus(day,hour);
                                 const extra = overtimeAt(dateStr, hour);
                                 const hasContent = content || customSchedule || extra.length;
 
@@ -499,13 +516,13 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                                   <TableCell
                                     key={hour}
                                     className="schedule-cell"
-                                    title={extra.map(e => `${e.employee}: extra ${e.reportedAt ? "reportada" : "pendiente"}`).join(", ")}
+                                    title={[status==="vacation"?"Vacaciones":status==="coverage"?"Vacaciones: sábado por cubrir":"",...extra.map(e => `${e.employee}: extra ${e.reportedAt ? "reportada" : "pendiente"}`)].filter(Boolean).join(", ")}
                                     onDoubleClick={() =>
                                       handleCellDoubleClick(day, hour, day.shifts[hour])
                                     }
                                     sx={{
-                                      background: backgroundColor,
-                                      boxShadow: extra.length ? "inset 0 -4px #f59e0b" : "none",
+                                      background: status==="vacation" ? VACATION_COLOR : backgroundColor,
+                                      boxShadow: extra.length || status==="coverage" ? "inset 0 -4px "+EXTRA_COLOR : "none",
                                       border: "1px solid #ffffff08 !important",
                                       padding: "0 !important",
                                       textAlign: "center",
