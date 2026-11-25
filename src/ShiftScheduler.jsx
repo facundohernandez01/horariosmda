@@ -14,6 +14,8 @@ import {
 } from "@mui/material";
 import ScheduleManagement, { useOvertime, overtimeOnDate } from "./components/ScheduleManagement";
 import VacationWarnings, { cellVacation, coverageWarnings, VACATION_COLOR, EXTRA_COLOR } from "./components/VacationWarnings";
+import StaffSettings from "./components/StaffSettings";
+import {applyRotationRules} from "./components/rotationRules";
 import Modales from "./components/Modales";
 import Navbar from "./Navbar";
 import CellEditModal from "./CellEditModal";
@@ -120,6 +122,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   const [customSchedules, setCustomSchedules] = useState([]);
   const [inactiveSchedules, setInactiveSchedules] = useState([]);
   const [vacaciones, setVacaciones] = useState([]);
+  const [overtimeOpen,setOvertimeOpen]=useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [inactiveModalOpen, setInactiveModalOpen] = useState(false);
   const [vacacionesModalOpen, setVacacionesModalOpen] = useState(false);
@@ -140,7 +143,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   const numWeeks = Math.max(53, Math.ceil((Date.UTC(selectedYear + 1,0,7) - Date.UTC(firstYear,0,1))/604800000));
   const today = new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Argentina/Buenos_Aires"}).format(new Date());
   const warningYear = Math.max(currentYear+1,selectedYear,...vacaciones.map(v=>Number(v.hasta?.slice(0,4))||currentYear));
-  const allWeeks = generateSchedule(new Date(startDate), Math.max(numWeeks,Math.ceil((Date.UTC(warningYear+1,0,7)-Date.UTC(firstYear,0,1))/604800000)), turnoEmployee, extraEmployees);
+  const allWeeks = applyRotationRules(generateSchedule(new Date(startDate), Math.max(numWeeks,Math.ceil((Date.UTC(warningYear+1,0,7)-Date.UTC(firstYear,0,1))/604800000)), turnoEmployee, extraEmployees),configurations?.rotationRules);
   const schedule = allWeeks.filter(w => w.days.some(d => d.date.getFullYear() === selectedYear));
   const vacationStatus = (day,hour) => cellVacation(day,hour,vacaciones,turnoEmployee||[],extraEmployees||[],customSchedules,inactiveSchedules,configurations?.daysOfWeek||daysOfWeek);
   const warnings = coverageWarnings(allWeeks,vacaciones,turnoEmployee||[],extraEmployees||[],holidays,customSchedules,inactiveSchedules,configurations?.daysOfWeek||daysOfWeek,today);
@@ -233,6 +236,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   // ─── Resolved colors ─────────────────────────────────────────────────────
   const resolvedColors = configurations?.colors || colors;
   const resolvedExtraColors = configurations?.extraColors || extraColors;
+  const displayName = emp => configurations?.employeeNames?.[emp] || emp;
   const getEmpColor = (emp) => resolvedColors[emp] || resolvedExtraColors[emp] || "#444";
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -248,13 +252,16 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         onAddCustom={() => setModalOpen(true)}
         onAddInactive={() => setInactiveModalOpen(true)}
         onAddVacaciones={() => setVacacionesModalOpen(true)}
+        onOvertime={()=>setOvertimeOpen(true)}
+        overtimeCount={overtime.filter(e=>!e.reportedAt).length}
         onConfig={() => setConfigModalOpen(true)}
       />
 
-      <ScheduleManagement employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} names={configurations?.employeeNames || {}} />
+      <ScheduleManagement open={overtimeOpen} onClose={()=>setOvertimeOpen(false)} employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} names={configurations?.employeeNames || {}} />
       <Box sx={{px:2,pb:1,display:"flex",gap:2,flexWrap:"wrap",fontSize:12}}><span><span style={{display:"inline-block",width:16,height:10,background:VACATION_COLOR,marginRight:5}}/>Vacaciones</span><span style={{borderBottom:"3px solid "+EXTRA_COLOR}}>Extras / cobertura pendiente</span></Box>
       <VacationWarnings warnings={warnings} names={configurations?.employeeNames} onNavigate={date=>{setSelectedYear(Number(date.slice(0,4)));setWarningTarget(date);}}/>
       {/* ── Modales existentes ───────────────────────── */}
+      <StaffSettings open={configModalOpen} onClose={()=>setConfigModalOpen(false)} configurations={configurations} setConfigurations={setConfigurations} operators={turnoEmployee||[]} admins={extraEmployees||[]} startDate={startDate}/>
       <Modales
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
@@ -268,7 +275,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         inactiveSchedules={inactiveSchedules}
         setVacaciones={setVacaciones}
         vacaciones={vacaciones}
-        configModalOpen={configModalOpen}
+        configModalOpen={false}
         setConfigModalOpen={setConfigModalOpen}
         configurations={configurations}
         turnoEmployee={turnoEmployee}
@@ -351,7 +358,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                                 letterSpacing: "0.5px",
                               }}
                             >
-                              ✈ {v.nombre} ({v.desde} – {v.hasta})
+                              ✈ {displayName(v.nombre)} ({v.desde} – {v.hasta})
                             </span>
                           ))}
                         </TableCell>
@@ -412,7 +419,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                             height: "24px",
                           }}
                         >
-                          {emp || ""}
+                          {displayName(emp) || ""}
                         </TableCell>
                       );
                     })}
@@ -508,7 +515,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                                   ? customSchedule.name
                                   : inactiveSchedule
                                   ? ""
-                                  : day.shifts[hour] || "";
+                                  : displayName(day.shifts[hour]) || "";
 
                                 const status = vacationStatus(day,hour);
                                 const extra = overtimeAt(dateStr, hour);
