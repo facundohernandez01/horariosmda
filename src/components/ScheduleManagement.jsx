@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Stack, Typography, Alert, Chip, Checkbox, FormControlLabel } from "@mui/material";
-import { collection, doc, onSnapshot, addDoc, updateDoc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { collection, doc, onSnapshot, addDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
 export function periodFor(date) {
