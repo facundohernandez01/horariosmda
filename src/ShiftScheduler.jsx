@@ -12,7 +12,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import ScheduleManagement, { useOvertime } from "./components/ScheduleManagement";
+import ScheduleManagement, { useOvertime, overtimeOnDate } from "./components/ScheduleManagement";
 import Modales from "./components/Modales";
 import Navbar from "./Navbar";
 import CellEditModal from "./CellEditModal";
@@ -131,7 +131,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   const [selectedCell, setSelectedCell] = useState(null);
 
   const { entries: overtime, error: overtimeError } = useOvertime();
-  const overtimeAt = (date, hour) => overtime.filter(e => e.date === date && hour >= e.start && hour < e.end);
+  const overtimeAt = (date, hour) => overtime.filter(e => overtimeOnDate(e,date).some(s => hour >= s.start && hour < s.end));
   const { yearMonth } = useParams();
   const currentYear = Number(new Intl.DateTimeFormat("en", {year:"numeric",timeZone:"America/Argentina/Buenos_Aires"}).format(new Date()));
   const [selectedYear, setSelectedYear] = useState(() => /^\d{6}$/.test(yearMonth || "") ? Number(yearMonth.slice(0,4)) : currentYear);
@@ -238,7 +238,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
       />
 
       <Box sx={{display:"flex",alignItems:"center",gap:2,p:2,color:"#e0e0ff"}}><label htmlFor="schedule-year">Año del calendario</label><select id="schedule-year" value={selectedYear} onChange={e=>{setSelectedYear(Number(e.target.value));setExpandedWeek(null);}}>{Array.from({length:Math.max(currentYear+1,selectedYear)-firstYear+1},(_,i)=>firstYear+i).map(y=><option key={y}>{y}</option>)}</select></Box>
-      <ScheduleManagement employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} />
+      <ScheduleManagement employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} names={configurations?.employeeNames || {}} />
       {/* ── Modales existentes ───────────────────────── */}
       <Modales
         modalOpen={modalOpen}
