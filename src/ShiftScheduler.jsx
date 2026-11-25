@@ -127,6 +127,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   const [inactiveModalOpen, setInactiveModalOpen] = useState(false);
   const [vacacionesModalOpen, setVacacionesModalOpen] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [settingsTab,setSettingsTab]=useState(0);
   const [expandAll, setExpandAll] = useState(false);
   const [configurations, setConfigurations] = useState({});
 
@@ -247,14 +248,15 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         onAddVacaciones={() => setVacacionesModalOpen(true)}
         onOvertime={()=>setOvertimeOpen(true)}
         overtimeCount={overtime.filter(e=>!e.reportedAt).length}
-        onConfig={() => setConfigModalOpen(true)}
+        onConfig={() => {setSettingsTab(0);setConfigModalOpen(true);}}
+        onRotations={() => {setSettingsTab(1);setConfigModalOpen(true);}}
       />
 
       <ScheduleManagement open={overtimeOpen} onClose={()=>setOvertimeOpen(false)} employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} names={configurations?.employeeNames || {}} />
       <Box sx={{px:2,pb:1,display:"flex",gap:2,flexWrap:"wrap",fontSize:12}}><span><span style={{display:"inline-block",width:16,height:10,background:VACATION_COLOR,marginRight:5}}/>Vacaciones</span><span style={{borderBottom:"3px solid "+EXTRA_COLOR}}>Extras / cobertura pendiente</span></Box>
       <VacationWarnings warnings={warnings} names={configurations?.employeeNames} onNavigate={date=>{setSelectedYear(Number(date.slice(0,4)));setWarningTarget(date);}}/>
       {/* ── Modales existentes ───────────────────────── */}
-      <StaffSettings open={configModalOpen} onClose={()=>setConfigModalOpen(false)} configurations={configurations} setConfigurations={setConfigurations} operators={turnoEmployee||[]} admins={extraEmployees||[]} startDate={startDate}/>
+      <StaffSettings initialTab={settingsTab} open={configModalOpen} onClose={()=>setConfigModalOpen(false)} configurations={configurations} setConfigurations={setConfigurations} operators={turnoEmployee||[]} admins={extraEmployees||[]} startDate={startDate}/>
       <Modales
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
