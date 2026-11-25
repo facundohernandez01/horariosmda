@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Box, Button, TextField, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import { Modal, Box, Button, TextField, MenuItem, Select, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import CustomScheduleForm from "../CustomScheduleForm";
 import InactiveScheduleForm from "../InactiveScheduleForm";
 import VacacionesForm from "../VacacionesForm";
@@ -154,11 +154,17 @@ const Modales = ({
         </Box>
       </Modal>
 
-      <Modal open={vacacionesModalOpen} onClose={() => setVacacionesModalOpen(false)}>
-        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
-          <VacacionesForm configurations={configurations} vacaciones={vacaciones} onDelete={async id=>{await deleteVacacion(id);setVacaciones(prev=>prev.filter(v=>v.id!==id));}} onSave={(vacacion) => handleSaveVacaciones(vacacion, setVacaciones, vacaciones, setVacacionesModalOpen)} />
-        </Box>
-      </Modal>
+      <Dialog open={vacacionesModalOpen} onClose={() => setVacacionesModalOpen(false)}
+        fullWidth maxWidth="sm" scroll="paper" aria-labelledby="vacaciones-title"
+        slotProps={{paper:{sx:{maxHeight:"calc(100dvh - 32px)",m:2,width:"calc(100% - 32px)",borderRadius:3,color:"text.primary"}}}}>
+        <DialogTitle id="vacaciones-title">Gestionar vacaciones</DialogTitle>
+        <DialogContent dividers sx={{minHeight:0,overflowY:"auto",overscrollBehavior:"contain"}}>
+          <VacacionesForm configurations={configurations} vacaciones={vacaciones}
+            onDelete={async id=>{await deleteVacacion(id);setVacaciones(prev=>prev.filter(v=>v.id!==id));}}
+            onSave={(vacacion) => handleSaveVacaciones(vacacion, setVacaciones, vacaciones, setVacacionesModalOpen)} />
+        </DialogContent>
+        <DialogActions><Button onClick={() => setVacacionesModalOpen(false)}>Cerrar</Button></DialogActions>
+      </Dialog>
 
       <ConfigModal
         open={configModalOpen}
