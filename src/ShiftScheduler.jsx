@@ -29,7 +29,7 @@ import {
 import { fetchHolidays } from "./fetchHolidays";
 import generateSchedule from "./components/GenerateSchedule";
 import { colors, extraColors, daysOfWeek, dayInitials, loadConfigurations } from "./config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase/firebaseConfig";
 import { useParams } from "react-router-dom";
 
@@ -188,17 +188,10 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
     fetchCustomSchedules(setCustomSchedules);
     fetchInactiveSchedules(setInactiveSchedules);
     fetchVacaciones(setVacaciones);
-    loadConfigurations().then(setConfigurations);
+    loadConfigurations();
   }, []);
 
-  useEffect(() => {
-    const fetchConfigurations = async () => {
-      const docRef = doc(db, "configuraciones", "initialConfig");
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) setConfigurations(docSnap.data());
-    };
-    fetchConfigurations();
-  }, []);
+  useEffect(()=>onSnapshot(doc(db,"configuraciones","initialConfig"),snap=>{if(snap.exists())setConfigurations(snap.data());},error=>console.error("Error loading configuration",error)),[]);
 
   useEffect(()=>{let active=true;fetchHolidays(values=>{if(active)setHolidays(values);},Array.from({length:Math.max(1,warningYear-Math.min(currentYear,selectedYear)+1)},(_,i)=>Math.min(currentYear,selectedYear)+i));return()=>{active=false;};},[warningYear,currentYear,selectedYear]);
 
@@ -275,12 +268,9 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         inactiveSchedules={inactiveSchedules}
         setVacaciones={setVacaciones}
         vacaciones={vacaciones}
-        configModalOpen={false}
-        setConfigModalOpen={setConfigModalOpen}
         configurations={configurations}
         turnoEmployee={turnoEmployee}
         extraEmployees={extraEmployees}
-        setConfigurations={setConfigurations}
       />
 
       {/* ── Cell Edit Modal ──────────────────────────── */}
