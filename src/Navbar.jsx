@@ -5,6 +5,7 @@ const Navbar = ({
   onAddInactive,
   onAddVacaciones,
   onConfig,
+  onRotations,
   onOvertime,
   overtimeCount=0,
   expandAll,
@@ -41,9 +42,8 @@ const Navbar = ({
           <span>✈</span> Vacaciones
         </button>
         <button style={{ ...styles.actionBtn, ...styles.btnSecondary }} onClick={onOvertime}>Extras {overtimeCount>0?`(${overtimeCount})`:""}</button>
-        <button title="Personal y rotaciones" style={{ ...styles.actionBtn, ...styles.btnConfig }} onClick={onConfig}>
-          <span>⚙</span>
-        </button>
+        <button style={{ ...styles.actionBtn, ...styles.btnSecondary }} onClick={onConfig}>Personal</button>
+        <button style={{ ...styles.actionBtn, ...styles.btnSecondary }} onClick={onRotations}>Rotaciones</button>
       </div>
 
       {/* Mobile hamburger */}
@@ -62,7 +62,8 @@ const Navbar = ({
           <button style={styles.mobileMenuBtn} onClick={() => { onAddInactive(); setMenuOpen(false); }}>⊘ Inactivo</button>
           <button style={styles.mobileMenuBtn} onClick={() => { onAddVacaciones(); setMenuOpen(false); }}>✈ Vacaciones</button>
           <button style={styles.mobileMenuBtn} onClick={() => { onOvertime(); setMenuOpen(false); }}>Horas extras ({overtimeCount})</button>
-          <button style={styles.mobileMenuBtn} onClick={() => { onConfig(); setMenuOpen(false); }}>⚙ Configuración</button>
+          <button style={styles.mobileMenuBtn} onClick={() => { onConfig(); setMenuOpen(false); }}>Personal</button>
+          <button style={styles.mobileMenuBtn} onClick={() => { onRotations(); setMenuOpen(false); }}>Rotaciones</button>
         </div>
       )}
     </nav>
@@ -222,7 +223,7 @@ if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-    @media (max-width: 1050px) {
+    @media (max-width: 1200px) {
       .navbar-actions { display: none !important; }
       .navbar-hamburger { display: flex !important; }
       .navbar-year { margin-right: 8px !important; }
