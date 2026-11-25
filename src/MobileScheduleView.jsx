@@ -40,11 +40,11 @@ const MobileScheduleView = ({
     const blocks = [];
     let i = 0;
     while (i < 24) {
-      if (shifts[i]) {
+      if (shifts[i] && !day.inactiveHours?.[i]) {
         const emp = shifts[i];
         const start = i;
         const status=vacationStatus(day,i);
-        while (i < 24 && shifts[i] === emp && vacationStatus(day,i)===status) i++;
+        while (i < 24 && !day.inactiveHours?.[i] && shifts[i] === emp && vacationStatus(day,i)===status) i++;
         blocks.push({ emp, start, end: i,status });
       } else {
         i++;
