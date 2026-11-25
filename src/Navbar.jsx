@@ -5,6 +5,8 @@ const Navbar = ({
   onAddInactive,
   onAddVacaciones,
   onConfig,
+  onOvertime,
+  overtimeCount=0,
   expandAll,
   onToggleExpand,
   selectedYear,
@@ -38,7 +40,8 @@ const Navbar = ({
         <button style={{ ...styles.actionBtn, ...styles.btnVac }} onClick={onAddVacaciones}>
           <span>✈</span> Vacaciones
         </button>
-        <button style={{ ...styles.actionBtn, ...styles.btnConfig }} onClick={onConfig}>
+        <button style={{ ...styles.actionBtn, ...styles.btnSecondary }} onClick={onOvertime}>Extras {overtimeCount>0?`(${overtimeCount})`:""}</button>
+        <button title="Personal y rotaciones" style={{ ...styles.actionBtn, ...styles.btnConfig }} onClick={onConfig}>
           <span>⚙</span>
         </button>
       </div>
@@ -58,6 +61,7 @@ const Navbar = ({
           <button style={styles.mobileMenuBtn} onClick={() => { onAddCustom(); setMenuOpen(false); }}>＋ Custom Schedule</button>
           <button style={styles.mobileMenuBtn} onClick={() => { onAddInactive(); setMenuOpen(false); }}>⊘ Inactivo</button>
           <button style={styles.mobileMenuBtn} onClick={() => { onAddVacaciones(); setMenuOpen(false); }}>✈ Vacaciones</button>
+          <button style={styles.mobileMenuBtn} onClick={() => { onOvertime(); setMenuOpen(false); }}>Horas extras ({overtimeCount})</button>
           <button style={styles.mobileMenuBtn} onClick={() => { onConfig(); setMenuOpen(false); }}>⚙ Configuración</button>
         </div>
       )}
@@ -218,7 +222,7 @@ if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-    @media (max-width: 900px) {
+    @media (max-width: 1050px) {
       .navbar-actions { display: none !important; }
       .navbar-hamburger { display: flex !important; }
       .navbar-year { margin-right: 8px !important; }
