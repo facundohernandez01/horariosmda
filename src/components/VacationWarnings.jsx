@@ -10,9 +10,10 @@ export function cellVacation(day,hour,vacations,operators,admins,customSchedules
   if(!isOnVacation(vacations,employee,date))return null;
   const custom=customSchedules.some(c=>c.dates?.includes(date)&&hour>=c.startHour&&hour<c.endHour);
   if(custom)return null;
+  if(day.inactiveHours?.[hour])return null;
   const saturday=day.date.getDay()===6&&hour>=10&&hour<14;
   if(saturday&&admins.includes(employee))return "coverage";
-  if(inactiveSchedules.some(s=>s.day===dayNames[day.date.getDay()]&&hour>=s.startHour&&hour<s.endHour))return null;
+
   return operators.includes(employee)?"vacation":null;
 }
 export function coverageWarnings(schedule,vacations,operators,admins,holidays,customSchedules,inactiveSchedules,dayNames,today){
