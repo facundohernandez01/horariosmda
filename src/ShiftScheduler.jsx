@@ -16,6 +16,7 @@ import ScheduleManagement, { useOvertime, overtimeOnDate } from "./components/Sc
 import VacationWarnings, { cellVacation, coverageWarnings, VACATION_COLOR, EXTRA_COLOR } from "./components/VacationWarnings";
 import StaffSettings from "./components/StaffSettings";
 import {applyRotationRules} from "./components/rotationRules";
+import {applyInactiveRules} from "./components/inactiveRules";
 import Modales from "./components/Modales";
 import Navbar from "./Navbar";
 import CellEditModal from "./CellEditModal";
@@ -144,7 +145,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   const numWeeks = Math.max(53, Math.ceil((Date.UTC(selectedYear + 1,0,7) - Date.UTC(firstYear,0,1))/604800000));
   const today = new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Argentina/Buenos_Aires"}).format(new Date());
   const warningYear = Math.max(currentYear+1,selectedYear,...vacaciones.map(v=>Number(v.hasta?.slice(0,4))||currentYear));
-  const allWeeks = applyRotationRules(generateSchedule(new Date(startDate), Math.max(numWeeks,Math.ceil((Date.UTC(warningYear+1,0,7)-Date.UTC(firstYear,0,1))/604800000)), turnoEmployee, extraEmployees),configurations?.rotationRules);
+  const allWeeks = applyInactiveRules(applyRotationRules(generateSchedule(new Date(startDate), Math.max(numWeeks,Math.ceil((Date.UTC(warningYear+1,0,7)-Date.UTC(firstYear,0,1))/604800000)), turnoEmployee, extraEmployees),configurations?.rotationRules),inactiveSchedules,configurations?.daysOfWeek);
   const schedule = allWeeks.filter(w => w.days.some(d => d.date.getFullYear() === selectedYear));
   const vacationStatus = (day,hour) => cellVacation(day,hour,vacaciones,turnoEmployee||[],extraEmployees||[],customSchedules,inactiveSchedules,configurations?.daysOfWeek||daysOfWeek);
   const warnings = coverageWarnings(allWeeks,vacaciones,turnoEmployee||[],extraEmployees||[],holidays,customSchedules,inactiveSchedules,configurations?.daysOfWeek||daysOfWeek,today);
@@ -395,7 +396,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                       </span>
                     </TableCell>
                     {hours.map((hour) => {
-                      const emp = week.days[0].shifts[hour];
+                      const emp = week.days[0].inactiveHours?.[hour] ? null : week.days[0].shifts[hour];
                       const bg = vacationStatus(week.days[0],hour)==="vacation" ? VACATION_COLOR : emp ? getEmpColor(emp) : "#0d0d1e";
                       return (
                         <TableCell
@@ -486,18 +487,11 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                                     hour >= cs.startHour &&
                                     hour < cs.endHour
                                 );
-                                const inactiveSchedule = inactiveSchedules.find(
-                                  (is) =>
-                                    is.day === (configurations?.daysOfWeek || daysOfWeek)[day.date.getDay()] &&
-                                    hour >= is.startHour &&
-                                    hour < is.endHour
-                                );
+                                const inactiveSchedule = day.inactiveHours?.[hour];
                                 const isExtraShift = day.date.getDay() === 6 && hour >= 10 && hour < 14;
 
                                 const backgroundColor = customSchedule
                                   ? customSchedule.color
-                                  : isExtraShift
-                                  ? getEmpColor(day.shifts[hour])
                                   : inactiveSchedule
                                   ? "#0d0d1e"
                                   : day.shifts[hour]
