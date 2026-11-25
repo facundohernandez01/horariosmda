@@ -15,17 +15,16 @@ export default function StaffSettings({open,onClose,configurations,operators=[],
   const rules=configurations?.rotationRules||[];
   const ids=group==="operators"?operators:admins;
   const label=id=>names[id]||id;
-  useEffect(()=>{if(open){setNames({...configurations?.employeeNames});setColors({...configurations?.colors});setExtraColors({...configurations?.extraColors});setError("");setSuccess("");}},[open,configurations]);
-  const base=from&&startDate&&from>=dateKey(new Date(startDate))?generateSchedule(new Date(startDate),Math.max(1,Math.ceil((Date.parse(from)-startDate.getTime())/604800000)+3),operators,admins):[];
+  useEffect(()=>{if(open){setNames({...configurations?.employeeNames});setColors({...configurations?.colors});setExtraColors({...configurations?.extraColors});}},[open,configurations]);
+  const base=from&&startDate&&from>=dateKey(new Date(startDate))?generateSchedule(new Date(startDate),Math.max(1,Math.ceil((Date.parse(from)-startDate.getTime())/604800000)+Math.max(6,admins.length+2)),operators,admins):[];
   const baseDay=base.flatMap(w=>w.days).find(d=>dateKey(d.date)===from);
   const effective=applyRotationRules(base.map(w=>({...w,summary:{...w.summary},days:w.days.map(d=>({...d,shifts:[...d.shifts]}))})),rules);
   const effectiveDay=effective.flatMap(w=>w.days).find(d=>dateKey(d.date)===from);
-  const original=group==="operators"&&baseDay?[6,14,22].map(h=>baseDay.shifts[h]):ids;
   // For Saturdays, use the regular weekday assignment as reference.
   const weekday=base.find(w=>w.days.some(d=>dateKey(d.date)===from))?.summary;
   const originalOperators=weekday?shifts.map(s=>weekday[s]):operators;
   const baseline=group==="operators"?originalOperators:ids;
-  useEffect(()=>{if(group==="operators"){const week=effective.find(w=>w.days.some(d=>dateKey(d.date)===from));const day=effectiveDay;const candidate=day&&day.date.getDay()!==6?[6,14,22].map(h=>day.shifts[h]):week?shifts.map(s=>week.summary[s]):operators;setOrder(candidate.length===3&&new Set(candidate).size===3?candidate:operators);}else setOrder(admins);},[group,from,open,configurations,operators.join("|"),admins.join("|")]);
+  useEffect(()=>{if(group==="operators"){const week=effective.find(w=>w.days.some(d=>dateKey(d.date)===from));const day=effectiveDay;const candidate=day?.summary?shifts.map(s=>day.summary[s]):week?shifts.map(s=>week.summary[s]):operators;setOrder(candidate.length===3&&new Set(candidate).size===3?candidate:operators);}else {const upcoming=effective.flatMap(w=>w.days).filter(d=>dateKey(d.date)>=from&&d.date.getDay()===6).map(d=>d.shifts[10]);setOrder([...new Set([...upcoming,...admins])].filter(id=>admins.includes(id)));}},[group,from,open,configurations,operators.join("|"),admins.join("|")]);
   async function save(fields,message){setBusy(true);setError("");setSuccess("");try{await updateDoc(doc(db,"configuraciones","initialConfig"),fields);setConfigurations(prev=>({...prev,...fields}));setSuccess(message);}catch(e){setError(e.message);}finally{setBusy(false);}}
   function apply(){try{if(!from||!baseDay||mode==="range"&&(!to||to<from))throw Error("Seleccioná un rango válido posterior al inicio de la rotación.");if(order.length!==ids.length||new Set(order).size!==ids.length||order.some(id=>!ids.includes(id)))throw Error("Seleccioná cada persona exactamente una vez.");const rule={id:crypto.randomUUID(),group,from,to:mode==="future"?null:to,...(group==="operators"?{mapping:makeMapping(baseline,order)}:{order:[...order]})};save({rotationRules:[...rules,rule]},"Rotación aplicada.");}catch(e){setError(e.message);}}
   const changeOrder=(i,id)=>setOrder(prev=>{const copy=[...prev];const j=copy.indexOf(id);if(j>=0)copy[j]=copy[i];copy[i]=id;return copy;});
@@ -48,6 +47,6 @@ export default function StaffSettings({open,onClose,configurations,operators=[],
       {[...rules].reverse().map(r=><Paper key={r.id} variant="outlined" sx={{p:1.5}}><Typography fontWeight={600}>{r.group==="admins"?"Administrativos":"Tres turnos"} · {r.from} — {r.to||"En adelante"}</Typography><Typography variant="body2">{r.order?r.order.map(label).join(" → "):Object.entries(r.mapping||{}).map(([a,b])=>label(a)+" → "+label(b)).join(" · ")}</Typography><Button size="small" color="error" disabled={busy} onClick={()=>{if(window.confirm("¿Quitar esta regla? Se recalculará el calendario de su rango."))save({rotationRules:rules.filter(x=>x.id!==r.id)},"Cambio eliminado.");}}>Quitar</Button></Paper>)}
       </>}
     </Stack></DialogContent>
-    <DialogActions><Button disabled={busy} onClick={onClose}>Cerrar</Button><Button variant="contained" disabled={busy||!operators.length||!admins.length} onClick={()=>tab===0?save({employeeNames:Object.fromEntries(Object.entries(names).map(([id,n])=>[id,n.trim()||id])),colors,extraColors},"Personal actualizado."):apply()}>Aplicar</Button></DialogActions>
+    <DialogActions><Button disabled={busy} onClick={onClose}>Cerrar</Button><Button variant="contained" disabled={busy||(tab===1&&!ids.length)||(tab===0&&!operators.length&&!admins.length)} onClick={()=>tab===0?save({employeeNames:Object.fromEntries(Object.entries(names).map(([id,n])=>[id,n.trim()||id])),colors,extraColors},"Personal actualizado."):apply()}>Aplicar</Button></DialogActions>
   </Dialog>;
 }
