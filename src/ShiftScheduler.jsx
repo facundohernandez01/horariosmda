@@ -132,10 +132,13 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
 
   const { entries: overtime, error: overtimeError } = useOvertime();
   const overtimeAt = (date, hour) => overtime.filter(e => e.date === date && hour >= e.start && hour < e.end);
-  const numWeeks = 53;
-  const schedule = generateSchedule(new Date(startDate), numWeeks, turnoEmployee, extraEmployees);
-
   const { yearMonth } = useParams();
+  const currentYear = Number(new Intl.DateTimeFormat("en", {year:"numeric",timeZone:"America/Argentina/Buenos_Aires"}).format(new Date()));
+  const [selectedYear, setSelectedYear] = useState(() => /^\d{6}$/.test(yearMonth || "") ? Number(yearMonth.slice(0,4)) : currentYear);
+  const firstYear = new Date(startDate).getFullYear();
+  const numWeeks = Math.max(53, Math.ceil((Date.UTC(selectedYear + 1,0,7) - Date.UTC(firstYear,0,1))/604800000));
+  const schedule = generateSchedule(new Date(startDate), numWeeks, turnoEmployee, extraEmployees).filter(w => w.days.some(d => d.date.getFullYear() === selectedYear));
+
   const weekRefs = useRef({});
   const scrollTargetRef = useRef(null); // índice al que hay que scrollear después del expand
   const targetMonth = yearMonth ? yearMonth.replace(/(\d{4})(\d{2})/, "$1-$2") : null;
@@ -194,12 +197,9 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
 
   const getVacacionesForMonth = (month, year) =>
     vacaciones.filter((v) => {
-      const desde = new Date(v.desde);
-      const hasta = new Date(v.hasta);
-      return (
-        (desde.getMonth() === month && desde.getFullYear() === year) ||
-        (hasta.getMonth() === month && hasta.getFullYear() === year)
-      );
+      const first = `${year}-${String(month+1).padStart(2,"0")}-01`;
+      const last = `${year}-${String(month+1).padStart(2,"0")}-${new Date(year,month+1,0).getDate()}`;
+      return v.desde <= last && v.hasta >= first;
     });
 
   const isHolidayInWeek = (week) =>
@@ -237,6 +237,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         onConfig={() => setConfigModalOpen(true)}
       />
 
+      <Box sx={{display:"flex",alignItems:"center",gap:2,p:2,color:"#e0e0ff"}}><label htmlFor="schedule-year">Año del calendario</label><select id="schedule-year" value={selectedYear} onChange={e=>{setSelectedYear(Number(e.target.value));setExpandedWeek(null);}}>{Array.from({length:Math.max(currentYear+1,selectedYear)-firstYear+1},(_,i)=>firstYear+i).map(y=><option key={y}>{y}</option>)}</select></Box>
       <ScheduleManagement employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} />
       {/* ── Modales existentes ───────────────────────── */}
       <Modales
