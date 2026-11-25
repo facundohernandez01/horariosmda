@@ -7,6 +7,7 @@ import { Box, Typography, Chip, Collapse, IconButton } from "@mui/material";
  */
 const MobileScheduleView = ({
   schedule,
+  overtime = [],
   holidays,
   customSchedules,
   vacaciones,
@@ -221,6 +222,7 @@ const MobileScheduleView = ({
                               </Box>
                             ))}
 
+                            {overtime.filter(e => e.date === dateStr).map(e => <Chip key={e.id} size="small" color="warning" label={`Extra ${e.employee} ${e.start}–${e.end} · ${e.reportedAt ? "Reportada" : "Pendiente"}`} />)}
                             {dayCustom.map((cs, ci) => (
                               <Box
                                 key={`cs-${ci}`}

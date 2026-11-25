@@ -15,7 +15,7 @@ const fetchInactiveSchedules = async (setInactiveSchedules) => {
 
 const fetchVacaciones = async (setVacaciones) => {
   const querySnapshot = await getDocs(collection(db, "vacaciones"));
-  const vacaciones = querySnapshot.docs.map(doc => doc.data());
+  const vacaciones = querySnapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
   setVacaciones(vacaciones);
 };
 
@@ -77,11 +77,11 @@ const handleSaveInactiveSchedule = async (inactiveSchedule, setInactiveSchedules
 
 const handleSaveVacaciones = async (vacacion, setVacaciones, vacaciones, setVacacionesModalOpen) => {
   try {
-    await addDoc(collection(db, "vacaciones"), vacacion);
-    setVacaciones([...vacaciones, vacacion]);
+    const saved = await addDoc(collection(db, "vacaciones"), vacacion);
+    setVacaciones([...vacaciones, {...vacacion, id:saved.id}]);
     setVacacionesModalOpen(false);
   } catch (error) {
-    console.error("Error adding document: ", error);
+    throw error;
   }
 };
 
