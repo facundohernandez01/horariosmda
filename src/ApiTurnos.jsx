@@ -1,3 +1,6 @@
+import { applyRotationRules } from "./components/rotationRules";
+import {doc,onSnapshot} from "firebase/firestore";
+import {db} from "./firebase/firebaseConfig";
 import generateSchedule from "./components/GenerateSchedule";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -168,7 +171,9 @@ const ApiTurnos = ({ startDate, turnoEmployee, extraEmployees }) => {
   useEffect(() => {
     fetchVacaciones(setVacaciones);
   }, []);
-  const schedule = generateSchedule(startDate, 54, turnoEmployee, extraEmployees);
+  const [rules,setRules]=useState([]);
+  useEffect(()=>onSnapshot(doc(db,"configuraciones","initialConfig"),snap=>setRules(snap.data()?.rotationRules||[])),[]);
+  const schedule = applyRotationRules(generateSchedule(new Date(startDate),Math.max(54,Math.ceil((Date.now()-startDate.getTime())/604800000)+54),turnoEmployee,extraEmployees),rules);
   useEffect(() => {
     const year = new Date().getFullYear();
     axios.get(`https://api.argentinadatos.com/v1/feriados/${year}`)
