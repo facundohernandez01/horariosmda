@@ -48,7 +48,7 @@ const SearchScheduleForm = ({onChanged}) => {
               label="Desde"
               type="number"
               value={schedule.startHour}
-              onChange={(e) => handleUpdate(schedule.id, { ...schedule, startHour: e.target.value })}
+              onChange={(e) => draft(schedule.id, { startHour: e.target.value })}
               fullWidth
               margin="normal"
             />
@@ -56,7 +56,7 @@ const SearchScheduleForm = ({onChanged}) => {
               label="Hasta"
               type="number"
               value={schedule.endHour}
-              onChange={(e) => handleUpdate(schedule.id, { ...schedule, endHour: e.target.value })}
+              onChange={(e) => draft(schedule.id, { endHour: e.target.value })}
               fullWidth
               margin="normal"
             />
@@ -64,7 +64,7 @@ const SearchScheduleForm = ({onChanged}) => {
               label="Color"
               type="color"
               value={schedule.color}
-              onChange={(e) => handleUpdate(schedule.id, { ...schedule, color: e.target.value })}
+              onChange={(e) => draft(schedule.id, { color: e.target.value })}
               fullWidth
               margin="normal"
             />
