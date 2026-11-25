@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button, Box } from "@mui/material";
+import { TextField, Button, Box, Alert, Stack } from "@mui/material";
 import { fetchCustomSchedulesByDate, updateCustomSchedule, deleteCustomSchedule } from "./firebase/firebaseFunctions";
 
-const SearchScheduleForm = () => {
+const SearchScheduleForm = ({onChanged}) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [existingSchedules, setExistingSchedules] = useState([]);
 
+  const [busy,setBusy]=useState(false),[error,setError]=useState("");
+  const draft=(id,fields)=>setExistingSchedules(prev=>prev.map(s=>s.id===id?{...s,...fields}:s));
   useEffect(() => {
     if (selectedDate) {
       fetchCustomSchedulesByDate(selectedDate, setExistingSchedules);
@@ -13,37 +15,37 @@ const SearchScheduleForm = () => {
   }, [selectedDate]);
 
   const handleUpdate = async (id, updatedSchedule) => {
-    await updateCustomSchedule(id, updatedSchedule);
-    fetchCustomSchedulesByDate(selectedDate, setExistingSchedules);
+    setBusy(true);setError("");try{const {id:ignored,...fields}=updatedSchedule;await updateCustomSchedule(id,{...fields,startHour:Number(fields.startHour),endHour:Number(fields.endHour)});await fetchCustomSchedulesByDate(selectedDate,setExistingSchedules);await onChanged?.();}catch(e){setError(e.message);}finally{setBusy(false);}
   };
 
   const handleDelete = async (id) => {
-    await deleteCustomSchedule(id);
-    fetchCustomSchedulesByDate(selectedDate, setExistingSchedules);
+    if(!window.confirm("¿Eliminar este horario personalizado?"))return;setBusy(true);setError("");try{await deleteCustomSchedule(id);await fetchCustomSchedulesByDate(selectedDate,setExistingSchedules);await onChanged?.();}catch(e){setError(e.message);}finally{setBusy(false);}
   };
 
   return (
     <Box container spacing={2}>
       <Box item xs={6}>
         <TextField
-          label="Select Date"
+          label="Fecha"
+          slotProps={{inputLabel:{shrink:true}}}
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
           fullWidth
           margin="normal"
         />
-        {existingSchedules.map((schedule, index) => (
-          <Box key={index} p={2} xs={12} sm={6} md={4} lg={3}>
+        {error&&<Alert severity="error">{error}</Alert>}
+        {existingSchedules.map((schedule) => (
+          <Box key={schedule.id} p={2} xs={12} sm={6} md={4} lg={3}>
             <TextField
-              label="Name"
+              label="Nombre"
               value={schedule.name}
-              onChange={(e) => handleUpdate(schedule.id, { ...schedule, name: e.target.value })}
+              onChange={(e) => draft(schedule.id, { name: e.target.value })}
               fullWidth
               margin="normal"
             />
             <TextField
-              label="Start Hour"
+              label="Desde"
               type="number"
               value={schedule.startHour}
               onChange={(e) => handleUpdate(schedule.id, { ...schedule, startHour: e.target.value })}
@@ -51,7 +53,7 @@ const SearchScheduleForm = () => {
               margin="normal"
             />
             <TextField
-              label="End Hour"
+              label="Hasta"
               type="number"
               value={schedule.endHour}
               onChange={(e) => handleUpdate(schedule.id, { ...schedule, endHour: e.target.value })}
@@ -66,9 +68,9 @@ const SearchScheduleForm = () => {
               fullWidth
               margin="normal"
             />
-            <Button onClick={() => handleDelete(schedule.id)} variant="contained" color="secondary">
+            <Stack direction="row" spacing={1}><Button variant="contained" disabled={busy||!schedule.name?.trim()||schedule.startHour===""||schedule.endHour===""||!Number.isInteger(+schedule.startHour)||!Number.isInteger(+schedule.endHour)||+schedule.startHour<0||+schedule.endHour>24||+schedule.endHour<=+schedule.startHour} onClick={()=>handleUpdate(schedule.id,schedule)}>Aplicar</Button><Button disabled={busy} onClick={() => handleDelete(schedule.id)} color="error">
               Eliminar
-            </Button>
+            </Button></Stack>
           </Box>
         ))}
       </Box>
