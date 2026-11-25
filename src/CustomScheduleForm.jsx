@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Tabs, Tab, Typography } from "@mui/material";
+import { Box, Tabs, Tab } from "@mui/material";
 import AddScheduleForm from "./AddScheduleForm";
 import SearchScheduleForm from "./SearchScheduleForm";
 
@@ -15,15 +15,15 @@ const TabPanel = (props) => {
       {...other}
     >
       {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
+        <Box py={2}>
+          {children}
         </Box>
       )}
     </div>
   );
 };
 
-const CustomScheduleForm = ({ onSave, configurations }) => {
+const CustomScheduleForm = ({ onSave, configurations, onChanged }) => {
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
@@ -32,16 +32,16 @@ const CustomScheduleForm = ({ onSave, configurations }) => {
 
   return (
     <>
-    <Box p={1} style={{ backgroundColor: "#eee", overflowY: "auto", maxHeight: "60vh" }}>
-      <Tabs value={tabValue} onChange={handleTabChange} aria-label="custom schedule tabs">
-        <Tab label="Insertar Datos" />
-        <Tab label="Buscar por Fecha" />
+    <Box>
+      <Tabs variant="fullWidth" value={tabValue} onChange={handleTabChange} aria-label="custom schedule tabs">
+        <Tab label="Nuevo" />
+        <Tab label="Editar por fecha" />
       </Tabs>
       <TabPanel value={tabValue} index={0}>
           <AddScheduleForm onSave={onSave} configurations={configurations} />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
-        <SearchScheduleForm />
+        <SearchScheduleForm onChanged={onChanged} />
       </TabPanel>
     </Box>
     </>
