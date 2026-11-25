@@ -9,7 +9,7 @@ const fetchCustomSchedules = async (setCustomSchedules) => {
 
 const fetchInactiveSchedules = async (setInactiveSchedules) => {
   const querySnapshot = await getDocs(collection(db, "inactiveSchedules"));
-  const schedules = querySnapshot.docs.map(doc => doc.data());
+  const schedules = querySnapshot.docs.map(doc => ({...doc.data(),id:doc.id}));
   setInactiveSchedules(schedules);
 };
 
