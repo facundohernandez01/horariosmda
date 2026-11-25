@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { VACATION_COLOR, EXTRA_COLOR } from "./components/VacationWarnings";
 import { overtimeOnDate } from "./components/ScheduleManagement";
 import { Box, Typography, Chip, Collapse, IconButton } from "@mui/material";
 
@@ -8,6 +9,8 @@ import { Box, Typography, Chip, Collapse, IconButton } from "@mui/material";
  */
 const MobileScheduleView = ({
   schedule,
+  vacationStatus = () => null,
+  warningTargetIndex,
   overtime = [],
   holidays,
   customSchedules,
@@ -17,6 +20,7 @@ const MobileScheduleView = ({
   onCellDoubleClick,
 }) => {
   const [expandedWeek, setExpandedWeek] = useState(null);
+  useEffect(()=>{if(warningTargetIndex!==null&&warningTargetIndex!==undefined)setExpandedWeek(warningTargetIndex);},[warningTargetIndex]);
   const colors = configurations?.colors || {};
   const extraColors = configurations?.extraColors || {};
 
@@ -30,15 +34,17 @@ const MobileScheduleView = ({
   const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
   // Group shifts into contiguous blocks for compact display
-  const getShiftBlocks = (shifts) => {
+  const getShiftBlocks = (day) => {
+    const shifts=day.shifts;
     const blocks = [];
     let i = 0;
     while (i < 24) {
       if (shifts[i]) {
         const emp = shifts[i];
         const start = i;
-        while (i < 24 && shifts[i] === emp) i++;
-        blocks.push({ emp, start, end: i });
+        const status=vacationStatus(day,i);
+        while (i < 24 && shifts[i] === emp && vacationStatus(day,i)===status) i++;
+        blocks.push({ emp, start, end: i,status });
       } else {
         i++;
       }
@@ -72,9 +78,7 @@ const MobileScheduleView = ({
         const isExpanded = expandAll || expandedWeek === index;
 
         const weekVacaciones = vacaciones.filter((v) => {
-          const desde = new Date(v.desde);
-          const hasta = new Date(v.hasta);
-          return week.days.some((d) => d.date >= desde && d.date <= hasta);
+          return week.days.some(d=>{const date=d.date.toISOString().slice(0,10);return date>=v.desde&&date<=v.hasta;});
         });
 
         return (
@@ -97,6 +101,7 @@ const MobileScheduleView = ({
 
             {/* Week card */}
             <Box
+              id={"schedule-week-"+index}
               className="week-card"
               sx={{
                 mx: 1,
@@ -158,7 +163,7 @@ const MobileScheduleView = ({
                     const dayName = dayNames[day.date.getDay()];
                     const isSaturday = day.date.getDay() === 6;
                     const isSunday = day.date.getDay() === 0;
-                    const shiftBlocks = getShiftBlocks(day.shifts);
+                    const shiftBlocks = getShiftBlocks(day);
 
                     const dayCustom = customSchedules.filter(
                       (cs) => cs.dates?.includes(dateStr)
@@ -208,22 +213,23 @@ const MobileScheduleView = ({
                                   })
                                 }
                                 sx={{
-                                  background: getColor(block.emp) + "33",
+                                  background: block.status==="vacation"?VACATION_COLOR:getColor(block.emp) + "33",
+                                  boxShadow:block.status==="coverage"?"inset 0 -3px "+EXTRA_COLOR:"none",
                                   border: `1px solid ${getColor(block.emp)}66`,
                                   borderRadius: "6px",
                                   padding: "2px 8px",
                                   fontSize: "11px",
                                   fontWeight: "600",
-                                  color: getColor(block.emp),
+                                  color: block.status==="vacation"?"#f5f5f5":getColor(block.emp),
                                   cursor: "pointer",
                                   userSelect: "none",
                                 }}
                               >
-                                {block.emp} {block.start}–{block.end}
+                                {block.emp} {block.start}–{block.end}{block.status==="vacation"?" · Vacaciones":block.status==="coverage"?" · Por cubrir":""}
                               </Box>
                             ))}
 
-                            {overtime.flatMap(e => overtimeOnDate(e,dateStr).map(s => <Chip key={e.id+"-"+s.date} size="small" color="warning" label={`Extra ${e.employee} ${String(s.start%24).padStart(2,"0")}:00–${String(s.end%24).padStart(2,"0")}:00 · ${e.reportedAt ? "Reportada" : "Pendiente"}`} />))}
+                            {overtime.flatMap(e => overtimeOnDate(e,dateStr).map(s => <Chip key={e.id+"-"+s.date} size="small" color="error" label={`Extra ${e.employee} ${String(s.start%24).padStart(2,"0")}:00–${String(s.end%24).padStart(2,"0")}:00 · ${e.reportedAt ? "Reportada" : "Pendiente"}`} />))}
                             {dayCustom.map((cs, ci) => (
                               <Box
                                 key={`cs-${ci}`}
