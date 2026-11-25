@@ -149,7 +149,7 @@ const CellEditModal = ({
                         width: 12, height: 12, borderRadius: "50%",
                         background: configurations?.colors?.[emp] || configurations?.extraColors?.[emp] || "#555"
                       }} />
-                      {emp}
+                      {configurations?.employeeNames?.[emp]||emp}
                     </Box>
                   </MenuItem>
                 ))}
