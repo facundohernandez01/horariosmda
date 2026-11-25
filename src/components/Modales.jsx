@@ -133,6 +133,8 @@ const Modales = ({
   configModalOpen,
   setConfigModalOpen,
   configurations,
+  turnoEmployee,
+  extraEmployees,
   setConfigurations
 }) => {
   return (
@@ -159,7 +161,7 @@ const Modales = ({
         slotProps={{paper:{sx:{maxHeight:"calc(100dvh - 32px)",m:2,width:"calc(100% - 32px)",borderRadius:3,color:"text.primary"}}}}>
         <DialogTitle id="vacaciones-title">Gestionar vacaciones</DialogTitle>
         <DialogContent dividers sx={{minHeight:0,overflowY:"auto",overscrollBehavior:"contain"}}>
-          <VacacionesForm configurations={configurations} vacaciones={vacaciones}
+          <VacacionesForm configurations={{...configurations, turnoEmployee: turnoEmployee || configurations?.turnoEmployee, extraEmployees: extraEmployees || configurations?.extraEmployees}} vacaciones={vacaciones}
             onDelete={async id=>{await deleteVacacion(id);setVacaciones(prev=>prev.filter(v=>v.id!==id));}}
             onSave={(vacacion) => handleSaveVacaciones(vacacion, setVacaciones, vacaciones, setVacacionesModalOpen)} />
         </DialogContent>
