@@ -9,6 +9,7 @@ export function applyRotationRules(schedule, rules = []) {
       const date = day.date.toISOString().slice(0,10);
       const operators = activeRule(rules,"operators",date);
       const admins = activeRule(rules,"admins",date);
+      day.summary = Object.fromEntries(Object.entries(week.summary).map(([shift,emp])=>[shift,operators?.mapping?.[emp]||emp]));
       if (operators) day.shifts = day.shifts.map((emp,h) => day.date.getDay() === 6 && h >= 10 && h < 14 ? emp : (operators.mapping?.[emp] || emp));
       if (admins && day.date.getDay() === 6 && admins.order?.length) {
         const delta = Math.floor((Date.parse(date)-Date.parse(admins.from))/604800000);
