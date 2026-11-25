@@ -1,3 +1,4 @@
+import { applyRotationRules } from "../src/components/rotationRules.js";
 export const config = { runtime: "edge" };
 
 // ==============================
@@ -203,10 +204,11 @@ export default async function handler(req) {
   try {
     // 1. Leer configuraciones de Firestore
     const configSnap = await firestoreGet("configuraciones");
-    let startDate = null, turnoEmployee = null, extraEmployees = null;
+    let startDate = null, turnoEmployee = null, extraEmployees = null, rotationRules = [];
 
     for (const doc of configSnap.documents || []) {
       const data = parseDoc(doc);
+      if (doc.name?.endsWith("/initialConfig")) rotationRules = data.rotationRules || [];
       if (data.turnoEmployee) turnoEmployee = data.turnoEmployee;
       if (data.extraEmployees) extraEmployees = data.extraEmployees;
       if (data.fechaInicioRotacion?.[0]) {
@@ -233,7 +235,7 @@ export default async function handler(req) {
     const holidays = feriadosData.map((h) => h.fecha);
 
     // 4. Generar schedule y calcular resultados
-    const schedule = generateSchedule(startDate, 54, turnoEmployee, extraEmployees);
+    const schedule = applyRotationRules(generateSchedule(startDate, Math.max(54, Math.ceil((Date.now()-startDate.getTime())/604800000)+54), turnoEmployee, extraEmployees), rotationRules);
 
     const result = {
       sabado_proximo: getNextSaturday(schedule),
