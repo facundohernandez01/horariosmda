@@ -151,38 +151,39 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
 
   const weekRefs = useRef({});
   const [warningTarget,setWarningTarget] = useState(null);
-  const scrollTargetRef = useRef(null); // índice al que hay que scrollear después del expand
-  const targetMonth = yearMonth ? yearMonth.replace(/(\d{4})(\d{2})/, "$1-$2") : null;
+  const initialScrollDone = useRef(false);
+  const targetMonth = /^\d{6}$/.test(yearMonth || "") ? yearMonth.replace(/(\d{4})(\d{2})/, "$1-$2") : null;
 
-  useEffect(()=>{if(!warningTarget)return;const idx=schedule.findIndex(w=>w.days.some(d=>d.date.toISOString().slice(0,10)===warningTarget));if(idx<0)return;setExpandedWeek(idx);setWarningTarget(null);requestAnimationFrame(()=>requestAnimationFrame(()=>{const el=document.getElementById("schedule-week-"+idx);el?.scrollIntoView({behavior:"smooth",block:"center"});}));},[warningTarget,selectedYear,schedule.length]);
+  const scrollToWeek = (index) => {
+    setExpandedWeek(index);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = document.getElementById("schedule-week-" + index);
+      if (!el) return;
+      const navbarHeight = document.querySelector("nav")?.getBoundingClientRect().height || 56;
+      const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight - 12;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({top:Math.max(0,top),behavior:reducedMotion?"auto":"smooth"});
+    }));
+  };
 
-  // 1️⃣ Cuando cambia la URL: encontrar la semana y expandirla
-  useEffect(() => {
-    if (!targetMonth || !schedule.length) return;
-    const targetIndex = schedule.findIndex((week) => week.date.startsWith(targetMonth));
-    if (targetIndex !== -1) {
-      scrollTargetRef.current = targetIndex;
-      setExpandedWeek(targetIndex);
-    }
-  }, [targetMonth, schedule.length]);
+  useEffect(()=>{
+    if(!warningTarget)return;
+    const idx=schedule.findIndex(w=>w.days.some(d=>d.date.toISOString().slice(0,10)===warningTarget));
+    if(idx<0)return;
+    setWarningTarget(null);
+    scrollToWeek(idx);
+  },[warningTarget,selectedYear,schedule.length]);
 
-  // 2️⃣ Cuando expandedWeek cambia y hay un scroll pendiente, scrollear
-  useEffect(() => {
-    if (scrollTargetRef.current === null) return;
-    const idx = scrollTargetRef.current;
-    scrollTargetRef.current = null;
-
-    // Esperar a que React termine de renderizar las filas expandidas
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const el = weekRefs.current[idx];
-        if (!el) return;
-        const navbarHeight = 56; // altura del sticky navbar
-        const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight - 8;
-        window.scrollTo({ top, behavior: "smooth" });
-      });
-    });
-  }, [expandedWeek]);
+  // On entry, respect explicit month links; otherwise open the current week.
+  useEffect(()=>{
+    if(initialScrollDone.current || !schedule.length)return;
+    const targetIndex = targetMonth
+      ? schedule.findIndex(w=>w.days.some(d=>d.date.toISOString().slice(0,7)===targetMonth))
+      : schedule.findIndex(w=>w.days.some(d=>d.date.toISOString().slice(0,10)===today));
+    if(targetIndex<0)return;
+    initialScrollDone.current=true;
+    scrollToWeek(targetIndex);
+  },[targetMonth,today,schedule.length,selectedYear]);
 
   useEffect(() => {
 
