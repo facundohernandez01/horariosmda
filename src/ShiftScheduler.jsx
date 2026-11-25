@@ -256,6 +256,8 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         configModalOpen={configModalOpen}
         setConfigModalOpen={setConfigModalOpen}
         configurations={configurations}
+        turnoEmployee={turnoEmployee}
+        extraEmployees={extraEmployees}
         setConfigurations={setConfigurations}
       />
 
