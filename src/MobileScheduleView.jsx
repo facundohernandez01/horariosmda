@@ -24,6 +24,7 @@ const MobileScheduleView = ({
   const colors = configurations?.colors || {};
   const extraColors = configurations?.extraColors || {};
 
+  const displayName=emp=>configurations?.employeeNames?.[emp]||emp;
   const getColor = (emp) => colors[emp] || extraColors[emp] || "#555";
 
   const getMonthName = (dateString) => {
@@ -91,7 +92,7 @@ const MobileScheduleView = ({
                 {weekVacaciones.map((v) => (
                   <Chip
                     key={v.nombre}
-                    label={`✈ ${v.nombre}`}
+                    label={`✈ ${displayName(v.nombre)}`}
                     size="small"
                     sx={{ background: "#f59e0b22", color: "#f59e0b", border: "1px solid #f59e0b44", fontSize: "11px" }}
                   />
@@ -136,7 +137,7 @@ const MobileScheduleView = ({
                     {Object.entries(week.summary || {}).map(([turno, emp]) => (
                       <Chip
                         key={turno}
-                        label={`${emp} ${turno}`}
+                        label={`${displayName(emp)} ${turno}`}
                         size="small"
                         sx={{
                           background: getColor(emp) + "33",
@@ -225,11 +226,11 @@ const MobileScheduleView = ({
                                   userSelect: "none",
                                 }}
                               >
-                                {block.emp} {block.start}–{block.end}{block.status==="vacation"?" · Vacaciones":block.status==="coverage"?" · Por cubrir":""}
+                                {displayName(block.emp)} {block.start}–{block.end}{block.status==="vacation"?" · Vacaciones":block.status==="coverage"?" · Por cubrir":""}
                               </Box>
                             ))}
 
-                            {overtime.flatMap(e => overtimeOnDate(e,dateStr).map(s => <Chip key={e.id+"-"+s.date} size="small" color="error" label={`Extra ${e.employee} ${String(s.start%24).padStart(2,"0")}:00–${String(s.end%24).padStart(2,"0")}:00 · ${e.reportedAt ? "Reportada" : "Pendiente"}`} />))}
+                            {overtime.flatMap(e => overtimeOnDate(e,dateStr).map(s => <Chip key={e.id+"-"+s.date} size="small" color="error" label={`Extra ${displayName(e.employee)} ${String(s.start%24).padStart(2,"0")}:00–${String(s.end%24).padStart(2,"0")}:00 · ${e.reportedAt ? "Reportada" : "Pendiente"}`} />))}
                             {dayCustom.map((cs, ci) => (
                               <Box
                                 key={`cs-${ci}`}
