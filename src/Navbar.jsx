@@ -7,6 +7,9 @@ const Navbar = ({
   onConfig,
   expandAll,
   onToggleExpand,
+  selectedYear,
+  availableYears = [],
+  onYearChange,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -17,8 +20,10 @@ const Navbar = ({
         <span style={styles.brandText}>Horarios<span style={styles.brandAccent}>MDA</span></span>
       </div>
 
+      {availableYears.length > 0 && <label className="navbar-year" style={styles.yearGroup}><span>Año</span><select aria-label="Año" value={selectedYear} onChange={e=>onYearChange?.(Number(e.target.value))} style={styles.yearSelect}>{availableYears.map(year=><option key={year} value={year}>{year}</option>)}</select></label>}
+
       {/* Desktop actions */}
-      <div style={styles.actions}>
+      <div className="navbar-actions" style={styles.actions}>
         <button style={styles.toggleBtn} onClick={onToggleExpand}>
           <span style={styles.toggleIcon}>{expandAll ? "▲" : "▼"}</span>
           {expandAll ? "Contraer" : "Expandir"} semanas
@@ -39,7 +44,7 @@ const Navbar = ({
       </div>
 
       {/* Mobile hamburger */}
-      <button style={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)}>
+      <button className="navbar-hamburger" aria-label="Menú" aria-expanded={menuOpen} style={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)}>
         <span style={styles.hamLine} />
         <span style={styles.hamLine} />
         <span style={styles.hamLine} />
@@ -68,13 +73,14 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 20px",
     height: "56px",
     background: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)",
     borderBottom: "2px solid #00d4ff33",
     boxShadow: "0 4px 20px rgba(0,212,255,0.15)",
     fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
+    gap: "6px",
+    padding: "0 12px",
   },
   brand: {
     display: "flex",
@@ -93,13 +99,12 @@ const styles = {
   brandAccent: {
     color: "#00d4ff",
   },
+  yearGroup: { display:"inline-flex", alignItems:"center", gap:6, color:"#aab4c8", fontSize:12, whiteSpace:"nowrap", marginLeft:"auto", marginRight:12 },
+  yearSelect: { font:"inherit", fontWeight:600, color:"#e0e0ff", background:"#1a1a2e", colorScheme:"dark", border:"1px solid #ffffff26", borderRadius:7, padding:"5px 8px", cursor:"pointer", outlineOffset:3 },
   actions: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    "@media (max-width: 768px)": {
-      display: "none",
-    },
   },
   divider: {
     width: "1px",
@@ -213,10 +218,17 @@ if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       .navbar-actions { display: none !important; }
       .navbar-hamburger { display: flex !important; }
+      .navbar-year { margin-right: 8px !important; }
     }
+    @media (max-width: 360px) {
+      .navbar-year { gap: 3px !important; margin-right: 4px !important; }
+      .navbar-year select { padding: 4px !important; }
+    }
+    .navbar-year select:focus-visible { outline: 2px solid #00d4ff; }
+    .navbar-year select:hover { border-color: #00d4ff66 !important; }
     .navbar-toggleBtn:hover { background: rgba(255,255,255,0.08) !important; color: #00d4ff !important; }
     .navbar-actionBtn:hover { filter: brightness(1.15); transform: translateY(-1px); }
   `;
