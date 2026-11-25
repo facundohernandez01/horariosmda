@@ -38,7 +38,7 @@ const AddScheduleForm = ({ onSave, configurations }) => {
       }
     }
 
-    onSave({ dates: allDates, startHour, endHour, color, name });
+    onSave({ dates: [...new Set(allDates.filter(Boolean))], startHour:Number(startHour), endHour:Number(endHour), color, name:name.trim() });
   };
 
   return (
@@ -58,7 +58,8 @@ const AddScheduleForm = ({ onSave, configurations }) => {
           Agregar fecha
         </Button>
         <TextField
-          label="Range Start Date"
+          label="Desde fecha"
+          slotProps={{inputLabel:{shrink:true}}}
           type="date"
           value={rangeStartDate}
           onChange={(e) => setRangeStartDate(e.target.value)}
@@ -66,7 +67,8 @@ const AddScheduleForm = ({ onSave, configurations }) => {
           margin="normal"
         />
         <TextField
-          label="Range End Date"
+          label="Hasta fecha"
+          slotProps={{inputLabel:{shrink:true},htmlInput:{min:rangeStartDate||undefined}}}
           type="date"
           value={rangeEndDate}
           onChange={(e) => setRangeEndDate(e.target.value)}
@@ -74,7 +76,7 @@ const AddScheduleForm = ({ onSave, configurations }) => {
           margin="normal"
         />
         <TextField
-          label="Start Hour"
+          label="Desde hora"
           type="number"
           value={startHour}
           onChange={(e) => setStartHour(e.target.value)}
@@ -82,7 +84,7 @@ const AddScheduleForm = ({ onSave, configurations }) => {
           margin="normal"
         />
         <TextField
-          label="End Hour"
+          label="Hasta hora"
           type="number"
           value={endHour}
           onChange={(e) => setEndHour(e.target.value)}
@@ -119,13 +121,13 @@ const AddScheduleForm = ({ onSave, configurations }) => {
           margin="normal"
         />
         <TextField
-          label="Name"
+          label="Nombre"
           value={name}
           onChange={(e) => setName(e.target.value)}
           fullWidth
           margin="normal"
         />
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button disabled={!name.trim()||startHour===""||endHour===""||!Number.isInteger(+startHour)||!Number.isInteger(+endHour)||+startHour<0||+endHour>24||+endHour<=+startHour||(!dates.some(Boolean)&&!(rangeStartDate&&rangeEndDate))||((rangeStartDate||rangeEndDate)&&(!rangeStartDate||!rangeEndDate||rangeEndDate<rangeStartDate))} onClick={handleSave} variant="contained" color="primary">
           Aplicar
         </Button>
       </Box>
