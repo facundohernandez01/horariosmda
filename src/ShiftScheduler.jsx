@@ -240,6 +240,9 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
     <Box sx={{ minHeight: "100vh", background: "#0a0a14" }}>
       {/* ── Sticky Navbar ────────────────────────────── */}
       <Navbar
+        selectedYear={selectedYear}
+        availableYears={Array.from({length:Math.max(currentYear+1,selectedYear)-Math.min(firstYear,currentYear)+1},(_,i)=>Math.min(firstYear,currentYear)+i)}
+        onYearChange={year=>{setSelectedYear(year);setExpandedWeek(null);setWarningTarget(null);}}
         expandAll={expandAll}
         onToggleExpand={() => setExpandAll(!expandAll)}
         onAddCustom={() => setModalOpen(true)}
@@ -248,7 +251,6 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         onConfig={() => setConfigModalOpen(true)}
       />
 
-      <Box sx={{display:"flex",alignItems:"center",gap:2,p:2,color:"#e0e0ff"}}><label htmlFor="schedule-year">Año del calendario</label><select id="schedule-year" value={selectedYear} onChange={e=>{setSelectedYear(Number(e.target.value));setExpandedWeek(null);}}>{Array.from({length:Math.max(currentYear+1,selectedYear)-firstYear+1},(_,i)=>firstYear+i).map(y=><option key={y}>{y}</option>)}</select></Box>
       <ScheduleManagement employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} names={configurations?.employeeNames || {}} />
       <Box sx={{px:2,pb:1,display:"flex",gap:2,flexWrap:"wrap",fontSize:12}}><span><span style={{display:"inline-block",width:16,height:10,background:VACATION_COLOR,marginRight:5}}/>Vacaciones</span><span style={{borderBottom:"3px solid "+EXTRA_COLOR}}>Extras / cobertura pendiente</span></Box>
       <VacationWarnings warnings={warnings} names={configurations?.employeeNames} onNavigate={date=>{setSelectedYear(Number(date.slice(0,4)));setWarningTarget(date);}}/>
