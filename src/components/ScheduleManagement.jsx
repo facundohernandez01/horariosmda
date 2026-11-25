@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Stack, Typography, Alert, Chip, Checkbox, FormControlLabel } from "@mui/material";
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Stack, Typography, Alert, Chip, Checkbox, FormControlLabel, Tabs, Tab } from "@mui/material";
 import { collection, doc, onSnapshot, addDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
@@ -36,9 +36,10 @@ export function useOvertime() {
   useEffect(()=>onSnapshot(collection(db,"overtime"),snap=>{setEntries(snap.docs.map(d=>({...d.data(),id:d.id})));setError("");},e=>setError(e.message)),[]);
   return {entries,error};
 }
-export default function ScheduleManagement({employees,entries,error,names={}}) {
+export default function ScheduleManagement({employees,entries,error,names={},open,onClose}) {
   const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Argentina/Buenos_Aires"}).format(new Date());
-  const [open,setOpen]=useState(false), [period,setPeriod]=useState(periodFor(today));
+  const [period,setPeriod]=useState(periodFor(today));
+  const [tab,setTab]=useState(0),[historyPeriod,setHistoryPeriod]=useState(""),[historyPerson,setHistoryPerson]=useState("");
   const [date,setDate]=useState(today), [employee,setEmployee]=useState(""), [start,setStart]=useState(14), [end,setEnd]=useState(22);
   const [note,setNote]=useState(""), [failure,setFailure]=useState(""), [busy,setBusy]=useState(false);
   const [checked,setChecked]=useState([]);
@@ -55,12 +56,11 @@ export default function ScheduleManagement({employees,entries,error,names={}}) {
     if(!window.confirm("¿Confirmar que se informaron "+rows.length+" registros?"))return;
     await act(async()=>{for(let i=0;i<rows.length;i+=450){const batch=writeBatch(db);for(const e of rows.slice(i,i+450))batch.update(doc(db,"overtime",e.id),{reportedAt:serverTimestamp()});await batch.commit();}setChecked([]);});
   }
-  return <Box sx={{px:2,py:1,display:"flex",gap:2,alignItems:"center",flexWrap:"wrap"}}>
-    <Button variant="outlined" onClick={()=>setOpen(true)}>Horas extras · {entries.filter(e=>!e.reportedAt).length} pendientes</Button>
-    {error&&<Alert severity="error">{error}</Alert>}
-    <Dialog open={open} onClose={()=>!busy&&setOpen(false)} fullWidth maxWidth="md" scroll="paper">
+  const history=entries.filter(e=>e.reportedAt&&(!historyPeriod||periodFor(e.date)===historyPeriod)&&(!historyPerson||e.employee===historyPerson)).sort((a,b)=>b.date.localeCompare(a.date));
+  return <Dialog open={open} onClose={()=>!busy&&onClose()} fullWidth maxWidth="md" scroll="paper">
       <DialogTitle>Gestión de horas extras</DialogTitle>
-      <DialogContent dividers><Stack spacing={2} sx={{pt:1}}>
+      <Tabs value={tab} onChange={(_,v)=>setTab(v)} variant="fullWidth"><Tab label="Pendientes y carga"/><Tab label="Historial reportado"/></Tabs>
+      <DialogContent dividers>{tab===0?<Stack spacing={2} sx={{pt:1}}>
         <Typography color="text.secondary">Período del 22 del mes anterior al 21 inclusive, según fecha de inicio. Confirmar el reporte no envía información externamente.</Typography>
         <TextField label="Período de cierre" type="month" value={period} onChange={e=>{setPeriod(e.target.value);setChecked([]);}} slotProps={{inputLabel:{shrink:true}}}/>
         <Box sx={{display:"flex",gap:1,flexWrap:"wrap"}}><Chip label={pending.reduce((s,e)=>s+overtimeHours(e),0)+" h pendientes"} color="warning"/><Chip label={selected.filter(e=>e.reportedAt).length+" registros informados"} color="success"/></Box>
@@ -84,9 +84,8 @@ export default function ScheduleManagement({employees,entries,error,names={}}) {
           <Button variant="outlined" disabled={!exportRows.length||busy||!!error} onClick={()=>exportHtml(exportRows,period,names)}>Exportar HTML ({exportRows.length})</Button>
           <Button variant="contained" color="success" disabled={!marked.length||busy||!!error} onClick={()=>report(marked)}>Marcar reportadas ({marked.length})</Button>
         </Stack>
-        {selected.map(e=><Box key={e.id} sx={{border:1,borderColor:"divider",borderRadius:2,p:2,display:"flex",gap:1,justifyContent:"space-between",alignItems:"center",flexWrap:"wrap"}}><Stack direction="row" alignItems="center"><Checkbox checked={checked.includes(e.id)&&!e.reportedAt} disabled={busy||!!error||!eligible.some(x=>x.id===e.id)} onChange={ev=>setChecked(prev=>ev.target.checked?[...prev,e.id]:prev.filter(id=>id!==e.id))}/><Box><Typography fontWeight={600}>{names[e.employee]||e.employee} · {e.date} · {rangeLabel(e)} ({overtimeHours(e)} h)</Typography><Typography variant="body2">{e.note}</Typography></Box></Stack>{e.reportedAt?<Chip color="success" label={"Reportado "+(e.reportedAt.toDate?.().toLocaleDateString("es-AR",{timeZone:"America/Argentina/Buenos_Aires"})||"")} />:<Button disabled={busy||!!error||!eligible.some(x=>x.id===e.id)} onClick={()=>report([e])}>Marcar reportado</Button>}</Box>)}
-        {!selected.length&&<Typography color="text.secondary">Sin registros en este período.</Typography>}
-      </Stack></DialogContent><DialogActions><Button disabled={busy} onClick={()=>setOpen(false)}>Cerrar</Button></DialogActions>
-    </Dialog>
-  </Box>;
+        {pending.map(e=><Box key={e.id} sx={{border:1,borderColor:"divider",borderRadius:2,p:2,display:"flex",gap:1,justifyContent:"space-between",alignItems:"center",flexWrap:"wrap"}}><Stack direction="row" alignItems="center"><Checkbox checked={checked.includes(e.id)&&!e.reportedAt} disabled={busy||!!error||!eligible.some(x=>x.id===e.id)} onChange={ev=>setChecked(prev=>ev.target.checked?[...prev,e.id]:prev.filter(id=>id!==e.id))}/><Box><Typography fontWeight={600}>{names[e.employee]||e.employee} · {e.date} · {rangeLabel(e)} ({overtimeHours(e)} h)</Typography><Typography variant="body2">{e.note}</Typography></Box></Stack>{e.reportedAt?<Chip color="success" label={"Reportado "+(e.reportedAt.toDate?.().toLocaleDateString("es-AR",{timeZone:"America/Argentina/Buenos_Aires"})||"")} />:<Button disabled={busy||!!error||!eligible.some(x=>x.id===e.id)} onClick={()=>report([e])}>Marcar reportado</Button>}</Box>)}
+        {!pending.length&&<Typography color="text.secondary">Sin registros en este período.</Typography>}
+      </Stack>:<Stack spacing={2} sx={{pt:1}}><Typography color="text.secondary">Horas ya informadas, de todos los períodos.</Typography>{error&&<Alert severity="error">{error}</Alert>}<TextField select label="Período" value={historyPeriod} onChange={e=>setHistoryPeriod(e.target.value)}><MenuItem value="">Todos</MenuItem>{[...new Set(entries.filter(e=>e.reportedAt).map(e=>periodFor(e.date)))].sort().reverse().map(p=><MenuItem key={p} value={p}>{p}</MenuItem>)}</TextField><TextField select label="Persona" value={historyPerson} onChange={e=>setHistoryPerson(e.target.value)}><MenuItem value="">Todas</MenuItem>{[...new Set(entries.filter(e=>e.reportedAt).map(e=>e.employee))].map(id=><MenuItem key={id} value={id}>{names[id]||id}</MenuItem>)}</TextField><Chip label={history.reduce((sum,e)=>sum+overtimeHours(e),0)+" horas reportadas"}/><Button disabled={!history.length} variant="outlined" onClick={()=>exportHtml(history,historyPeriod||"historico",names)}>Exportar historial HTML</Button>{history.map(e=><Box key={e.id} sx={{border:1,borderColor:"divider",borderRadius:2,p:2}}><Typography fontWeight={600}>{names[e.employee]||e.employee} · {e.date} · {rangeLabel(e)} ({overtimeHours(e)} h)</Typography><Typography variant="body2">{e.note}</Typography><Chip size="small" color="success" label={"Reportado "+(e.reportedAt.toDate?.().toLocaleDateString("es-AR",{timeZone:"America/Argentina/Buenos_Aires"})||"")}/></Box>)}{!history.length&&<Typography color="text.secondary">No hay registros reportados para estos filtros.</Typography>}</Stack>}</DialogContent><DialogActions><Button disabled={busy} onClick={()=>onClose()}>Cerrar</Button></DialogActions>
+    </Dialog>;
 }
