@@ -8,10 +8,11 @@ const today=()=>new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Argentina/Bue
 const dateKey=d=>d.toISOString().slice(0,10);
 const shifts=["6-14","14-22","22-6"];
 const dialogProps={fullWidth:true,maxWidth:"sm",scroll:"paper",slotProps:{paper:{sx:{maxHeight:"calc(100dvh - 32px)",m:2,borderRadius:3,color:"text.primary"}}}};
-export default function StaffSettings({open,onClose,configurations,operators=[],admins=[],startDate,setConfigurations}){
+export default function StaffSettings({open,onClose,initialTab=0,configurations,operators=[],admins=[],startDate,setConfigurations}){
   const [tab,setTab]=useState(0),[names,setNames]=useState({}),[colors,setColors]=useState({}),[extraColors,setExtraColors]=useState({});
   const [group,setGroup]=useState("operators"),[from,setFrom]=useState(today),[to,setTo]=useState(""),[mode,setMode]=useState("range"),[order,setOrder]=useState([]);
   const [busy,setBusy]=useState(false),[error,setError]=useState(""),[success,setSuccess]=useState("");
+  useEffect(()=>{if(open){setTab(initialTab);setError("");setSuccess("");}},[open,initialTab]);
   const rules=configurations?.rotationRules||[];
   const ids=group==="operators"?operators:admins;
   const label=id=>names[id]||id;
