@@ -12,6 +12,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import ScheduleManagement, { useOvertime } from "./components/ScheduleManagement";
 import Modales from "./components/Modales";
 import Navbar from "./Navbar";
 import CellEditModal from "./CellEditModal";
@@ -129,8 +130,10 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
   const [cellEditOpen, setCellEditOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
 
+  const { entries: overtime, error: overtimeError } = useOvertime();
+  const overtimeAt = (date, hour) => overtime.filter(e => e.date === date && hour >= e.start && hour < e.end);
   const numWeeks = 53;
-  const schedule = generateSchedule(startDate, numWeeks, turnoEmployee, extraEmployees);
+  const schedule = generateSchedule(new Date(startDate), numWeeks, turnoEmployee, extraEmployees);
 
   const { yearMonth } = useParams();
   const weekRefs = useRef({});
@@ -234,6 +237,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
         onConfig={() => setConfigModalOpen(true)}
       />
 
+      <ScheduleManagement employees={[...new Set([...(turnoEmployee || []), ...(extraEmployees || [])])]} entries={overtime} error={overtimeError} />
       {/* ── Modales existentes ───────────────────────── */}
       <Modales
         modalOpen={modalOpen}
@@ -266,6 +270,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
       {/* ── Vista Mobile ─────────────────────────────── */}
       {isMobile ? (
         <MobileScheduleView
+          overtime={overtime}
           schedule={schedule}
           holidays={holidays}
           customSchedules={customSchedules}
@@ -484,17 +489,20 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                                   ? ""
                                   : day.shifts[hour] || "";
 
-                                const hasContent = content || customSchedule;
+                                const extra = overtimeAt(dateStr, hour);
+                                const hasContent = content || customSchedule || extra.length;
 
                                 return (
                                   <TableCell
                                     key={hour}
                                     className="schedule-cell"
+                                    title={extra.map(e => `${e.employee}: extra ${e.reportedAt ? "reportada" : "pendiente"}`).join(", ")}
                                     onDoubleClick={() =>
                                       handleCellDoubleClick(day, hour, day.shifts[hour])
                                     }
                                     sx={{
                                       background: backgroundColor,
+                                      boxShadow: extra.length ? "inset 0 -4px #f59e0b" : "none",
                                       border: "1px solid #ffffff08 !important",
                                       padding: "0 !important",
                                       textAlign: "center",
@@ -522,7 +530,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                                         </span>
                                       </Tooltip>
                                     ) : (
-                                      content
+                                      content || extra.map(e => e.employee).join("/")
                                     )}
                                   </TableCell>
                                 );
