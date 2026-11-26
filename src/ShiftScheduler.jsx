@@ -396,7 +396,7 @@ const ShiftScheduler = ({ startDate, turnoEmployee, extraEmployees }) => {
                       </span>
                     </TableCell>
                     {hours.map((hour) => {
-                      const emp = week.days[0].inactiveHours?.[hour] ? null : week.days[0].shifts[hour];
+                      const emp = week.days[0].shifts[hour];
                       const bg = vacationStatus(week.days[0],hour)==="vacation" ? VACATION_COLOR : emp ? getEmpColor(emp) : "#0d0d1e";
                       return (
                         <TableCell
